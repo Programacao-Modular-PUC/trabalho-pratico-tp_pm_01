@@ -18,6 +18,7 @@ registerLocale('pt-BR', ptBR);
 
 function App() {
   // Estados para as datas e hóspedes
+  const [location, setLocation] = useState("Península de Maraú, Bahia")
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [guests, setGuests] = useState("1");
@@ -122,8 +123,8 @@ function App() {
               <div className="flex items-center gap-3">
                 <MapPin size={20} className="text-amber-400" />
                 <input
+                  value={location}
                   type="text"
-                  placeholder="Ex: Barra Grande"
                   className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-white placeholder:text-gray-600 w-full outline-none"
                 />
               </div>
