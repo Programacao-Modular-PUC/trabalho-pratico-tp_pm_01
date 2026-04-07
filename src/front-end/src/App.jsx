@@ -8,6 +8,8 @@ import Hospedagem from "./pages/acommodations"
 import Sobre from "./pages/about"
 import Login from "./pages/login"
 import Register from "./pages/register"
+import SaibaMais from "./pages/learn-more.jsx"
+import Gallery from "./pages/gallery.jsx"
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/destinos" element={<Destinos />} />
           <Route path="/hospedagem" element={<Hospedagem />} />
           <Route path="/sobre" element={<Sobre />} />
+          <Route path="/saiba-mais" element={<SaibaMais />} />
+          <Route path="/galeria" element={<Gallery />} />
         </Route>
 
         {/* Rotas sem navbar */}
