@@ -1,9 +1,317 @@
-import {useState} from 'react'
+import React, { useState, forwardRef } from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { ptBR } from 'date-fns/locale/pt-BR';
+import 'react-datepicker/dist/react-datepicker.css';
+import {
+    MapPin,
+    Calendar as CalendarIcon,
+    Users,
+    Star,
+    ChevronDown,
+    Search,
+    Compass
+} from 'lucide-react';
+import icon from '../assets/icons/icon.png';
+import { Link } from 'react-router-dom';
 
-function destination () {
+registerLocale('pt-BR', ptBR);
+
+function Destinations() {
+    const [location] = useState('Península de Maraú, Bahia');
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [guests, setGuests] = useState('1');
+
+    const CustomDateInput = forwardRef(({ value, onClick, placeholder }, ref) => (
+        <div
+            className="flex items-center gap-3 w-full text-left cursor-pointer group"
+            onClick={onClick}
+            ref={ref}
+        >
+            <CalendarIcon size={20} className="text-amber-400 group-hover:scale-110 transition-transform" />
+            <div className="flex-grow">
+                <span className="block text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-0.5">
+                    Estadia
+                </span>
+                <span className={`text-sm font-medium ${value ? 'text-white' : 'text-gray-500'}`}>
+                    {value || placeholder}
+                </span>
+            </div>
+            <ChevronDown size={14} className="text-gray-600" />
+        </div>
+    ));
+
+    const destinations = [
+        {
+            title: 'Praia da Ponta do Mutá',
+            description: 'Situada entre Barra Grande e Três Coqueiros, é conhecida pelas águas calmas e por oferecer um pôr do sol icônico.',
+            rating: '4.8',
+            img: 'img/praia-do-muta.jpg'
+        },
+        {
+            title: 'Praia de Taipu de Fora',
+            description: 'Considerada uma das mais belas do Brasil, é ideal para mergulho durante a maré baixa, quando os corais formam piscinas naturais.Mares cristalinos e recifes vibrantes.',
+            rating: '4.9',
+            img: '/img/praia_de_taipu_de_fora.jpg'
+        },
+        {
+            title: 'Barra grande',
+            description: 'Principal vila da península, possui infraestrutura turística, águas mornas e é frequentada por famílias.',
+            rating: '4.6',
+            img: '/img/praia_barra_grande.jpg'
+        },
+        {
+            title: 'Praia de Algodões',
+            description: 'Localizada mais ao sul, oferece tranquilidade, uma longa faixa de areia e formação de piscinas naturais na maré baixa.',
+            rating: '4.7',
+            img: 'img/praia_de_algodoes.jpg'
+        },
+        {
+            title: 'Praia de três coqueiros',
+            description: ' Localizada perto de Barra Grande, é popular para caminhadas e possui corais que formam piscinas naturais.',
+            rating: '4.5',
+            img: 'img/praia_de_tres_coqueiros.jpg'
+        },
+        {
+            title: 'Praia do cassange',
+            description: 'Praia mais isolada, conhecida pela sinergia entre a água doce da lagoa e a água salgada do mar.',
+            rating: '4.8',
+            img: 'img/praia_do_cassange.jpg'
+        }
+    ];
+
     return (
-        <h1>Destination section</h1>
-    )
+        <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-amber-400 selection:text-black antialiased">
+            <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                            <img src={icon} alt="icon" />
+                        </div>
+                        <span className="text-2xl font-black tracking-tighter uppercase">
+                            Maraú<span className="text-amber-400">Reserve</span>
+                        </span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-10 text-[13px] font-bold uppercase tracking-widest">
+                        <div className="flex gap-8 text-gray-400">
+                            <Link to='/' className="hover:text-amber-400 transition">Início</Link>
+                            <a href="#destinos" className="hover:text-amber-400 transition">Destinos</a>
+                            <Link to='/hospedagem' className="hover:text-amber-400 transition">Hospedagem</Link>
+                            <Link to='/sobre' className="hover:text-amber-400 transition">Sobre</Link>
+                        </div>
+                        <div className="flex items-center gap-6 border-l border-white/10 pl-10">
+                            <button className="text-gray-300 hover:text-white transition tracking-widest">
+                                <Link to='/login'>Entrar</Link>
+                            </button>
+                            <button className="bg-white text-black px-8 py-3 rounded-full font-black hover:bg-amber-400 transition transform hover:scale-105 active:scale-95 shadow-lg shadow-white/5">
+                                <Link to='/register'>Cadastrar</Link>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <header className="relative pt-40 pb-24 lg:pt-56 lg:pb-40 overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
+                    <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full" />
+                    <div className="absolute bottom-[10%] right-[-5%] w-[50%] h-[50%] bg-amber-600/10 blur-[150px] rounded-full" />
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-8">
+                            <span className="h-px w-12 bg-amber-400"></span>
+                            <span className="text-amber-400 text-xs font-black uppercase tracking-[0.3em]">Aventura brasileira</span>
+                        </div>
+                        <h1 className="text-6xl lg:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
+                            Encontre seu <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">destino perfeito.</span>
+                        </h1>
+                        <p className="text-lg lg:text-xl text-gray-400 leading-relaxed max-w-xl font-medium mb-12">
+                            Explore os melhores destinos da Bahia e do litoral brasileiro com acomodações premium, praias exclusivas e experiências memoráveis.
+                        </p>
+                        <div className="flex flex-wrap gap-6">
+                            <button className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition active:scale-95">
+                                <a href="#destinos">Ver destinos</a>
+                            </button>
+                            <button className="px-10 py-5 bg-white/5 border border-white/10 font-black rounded-2xl hover:bg-white/10 transition backdrop-blur-md">
+                                Saiba mais
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 relative">
+                        <div className="space-y-4 pt-12">
+                            <img src="/img/praia_de_taipu_de_fora.jpg" className="rounded-[2.5rem] h-80 w-full object-cover border border-white/10 shadow-2xl" alt="Ilha" />
+                            <img src="/img/praia_do_cassange.jpg" className="rounded-[2.5rem] h-56 w-full object-cover border border-white/10 shadow-2xl" alt="Praia" />
+                        </div>
+                        <div className="space-y-4">
+                            <img src="/img/praia-do-muta.jpg" className="rounded-[2.5rem] h-56 w-full object-cover border border-white/10 shadow-2xl" alt="Resort" />
+                            <img src="/img/praia_de_tres_coqueiros.jpg" className="rounded-[2.5rem] h-80 w-full object-cover border border-white/10 shadow-2xl" alt="Pôr do sol" />
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section className="max-w-7xl mx-auto px-6 -mt-20 relative z-40">
+                <div className="bg-[#111] border border-white/10 p-4 md:p-6 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] backdrop-blur-3xl">
+                    <div className="grid grid-cols-1 md:grid-cols-4 items-center">
+                        <div className="p-4 md:px-8 border-b md:border-b-0 md:border-r border-white/5 group">
+                            <label className="block text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-1">Onde</label>
+                            <div className="flex items-center gap-3">
+                                <MapPin size={20} className="text-amber-400" />
+                                <input
+                                    value={location}
+                                    type="text"
+                                    className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-white placeholder:text-gray-600 w-full outline-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="p-4 md:px-8 border-b md:border-b-0 md:border-r border-white/5">
+                            <DatePicker
+                                selectsRange={true}
+                                startDate={startDate}
+                                endDate={endDate}
+                                onChange={(update) => {
+                                    setStartDate(update[0]);
+                                    setEndDate(update[1]);
+                                }}
+                                locale="pt-BR"
+                                minDate={new Date()}
+                                placeholderText="Entrada — Saída"
+                                customInput={<CustomDateInput placeholder="Entrada — Saída" />}
+                            />
+                        </div>
+                        <div className="p-4 md:px-8 border-b md:border-b-0 group">
+                            <label className="block text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-1">Quem</label>
+                            <div className="flex items-center gap-3">
+                                <Users size={20} className="text-amber-400" />
+                                <select
+                                    value={guests}
+                                    onChange={(e) => setGuests(e.target.value)}
+                                    className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-white w-full outline-none appearance-none cursor-pointer"
+                                >
+                                    <option className="bg-black">1 Pessoa</option>
+                                    <option className="bg-black">2 Pessoas</option>
+                                    <option className="bg-black">3 Pessoas</option>
+                                    <option className="bg-black">4+ Pessoas</option>
+                                </select>
+                                <ChevronDown size={14} className="text-gray-600" />
+                            </div>
+                        </div>
+                        <div className="p-2">
+                            <button className="w-full bg-amber-400 h-16 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-amber-300 transition shadow-xl shadow-amber-500/20 active:scale-95 group">
+                                <Search size={24} className="text-black group-hover:scale-110 transition" />
+                                <span className="text-black font-black text-sm uppercase tracking-widest">Buscar destinos</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <main id="destinos" className="max-w-7xl mx-auto px-6 py-32">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                    <div className="max-w-lg">
+                        <h2 className="text-4xl font-black mb-4 tracking-tighter">Destinos Imperdíveis</h2>
+                        <p className="text-gray-500 font-medium">Conheça a seleção exclusiva de destinos com praias, trilhas e experiências locais.</p>
+                    </div>
+                    <button className="text-amber-400 font-black text-xs uppercase tracking-widest border-b-2 border-amber-400 pb-1 hover:text-white hover:border-white transition">Ver todas as ofertas</button>
+                </div>
+
+                <section className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+                    {destinations.map((item, i) => (
+                        <div key={i} className="group cursor-pointer">
+                            <div className="relative overflow-hidden rounded-[2.5rem] aspect-[4/5] mb-6">
+                                <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+                                <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-xs font-black border border-white/10">
+                                    <Star size={14} className="text-amber-400 fill-amber-400" /> {item.rating}
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-1 group-hover:text-amber-400 transition">{item.title}</h3>
+                                    <p className="text-gray-500 text-sm font-medium">{item.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </section>
+
+                <section className="mt-40 p-10 md:p-20 rounded-[4rem] bg-gradient-to-br from-[#111] to-[#080808] border border-white/5 relative overflow-hidden">
+                    <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-400/5 blur-[100px] rounded-full"></div>
+
+                    <div className="relative z-10 grid lg:grid-cols-2 gap-20 items-center">
+                        <div>
+                            <h3 className="text-4xl md:text-5xl font-black mb-8 tracking-tighter">Destino certo para a sua <span className="text-amber-400">próxima viagem.</span></h3>
+                            <p className="text-gray-400 leading-relaxed text-lg mb-12 font-medium">
+                                Explore praias paradisíacas, refúgios à beira-mar e vilarejos cheios de charme.
+                                Um convite para viver experiências únicas em um ambiente pensado para inspirar, moderno, elegante e inesquecível.
+                            </p>
+
+                            <div className="grid grid-cols-3 gap-10">
+                                <div>
+                                    <h4 className="text-amber-400 font-black text-xs uppercase tracking-[0.2em] mb-3">Praias</h4>
+                                    <p className="text-sm font-bold text-gray-300">Areia branca e águas claras.</p>
+                                </div>
+                                <div>
+                                    <h4 className="text-amber-400 font-black text-xs uppercase tracking-[0.2em] mb-3">Experiências</h4>
+                                    <p className="text-sm font-bold text-gray-300">Passeios exclusivos e natureza.</p>
+                                </div>
+                                <div>
+                                    <h4 className="text-amber-400 font-black text-xs uppercase tracking-[0.2em] mb-3">Estadia</h4>
+                                    <p className="text-sm font-bold text-gray-300">Conforto e design premium.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/40 border border-white/10 p-10 rounded-[3rem] backdrop-blur-xl">
+                            <div className="flex items-center gap-4 text-amber-400 font-black uppercase tracking-[0.25em] text-xs mb-8">
+                                <Compass size={18} />
+                                Destinos exclusivos
+                            </div>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-3xl bg-amber-400/10 text-amber-400 flex items-center justify-center">
+                                        <span className="text-xl font-black">01</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black">Reserva rápida</h4>
+                                        <p className="text-gray-400 text-sm">Organize sua viagem em poucos cliques.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-3xl bg-amber-400/10 text-amber-400 flex items-center justify-center">
+                                        <span className="text-xl font-black">02</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black">Suporte ativo</h4>
+                                        <p className="text-gray-400 text-sm">Atendimento dedicado para sua estadia.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-3xl bg-amber-400/10 text-amber-400 flex items-center justify-center">
+                                        <span className="text-xl font-black">03</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black">Experiências únicas</h4>
+                                        <p className="text-gray-400 text-sm">Viva o melhor do litoral e da cultura local.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-3xl bg-amber-400/10 text-amber-400 flex items-center justify-center">
+                                        <span className="text-xl font-black">04</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black">Localizações privilegiadas</h4>
+                                        <p className="text-gray-400 text-sm">Fique nos melhores pontos, perto das praias mais desejadas.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    );
 }
 
-export default destination;
+export default Destinations;
