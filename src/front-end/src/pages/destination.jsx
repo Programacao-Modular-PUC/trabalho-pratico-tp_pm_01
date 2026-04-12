@@ -12,6 +12,7 @@ import {
     Compass
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Searchbar from '../components/searchbar';
 
 registerLocale('pt-BR', ptBR);
 
@@ -123,61 +124,7 @@ function Destinations() {
                 </div>
             </header>
 
-            <section className="max-w-7xl mx-auto px-6 -mt-20 relative z-40">
-                <div className="bg-[#111] border border-white/10 p-4 md:p-6 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] backdrop-blur-3xl">
-                    <div className="grid grid-cols-1 md:grid-cols-4 items-center">
-                        <div className="p-4 md:px-8 border-b md:border-b-0 md:border-r border-white/5 group">
-                            <label className="block text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-1">Onde</label>
-                            <div className="flex items-center gap-3">
-                                <MapPin size={20} className="text-amber-400" />
-                                <input
-                                    value={location}
-                                    type="text"
-                                    className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-white placeholder:text-gray-600 w-full outline-none"
-                                />
-                            </div>
-                        </div>
-                        <div className="p-4 md:px-8 border-b md:border-b-0 md:border-r border-white/5">
-                            <DatePicker
-                                selectsRange={true}
-                                startDate={startDate}
-                                endDate={endDate}
-                                onChange={(update) => {
-                                    setStartDate(update[0]);
-                                    setEndDate(update[1]);
-                                }}
-                                locale="pt-BR"
-                                minDate={new Date()}
-                                placeholderText="Entrada — Saída"
-                                customInput={<CustomDateInput placeholder="Entrada — Saída" />}
-                            />
-                        </div>
-                        <div className="p-4 md:px-8 border-b md:border-b-0 group">
-                            <label className="block text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-1">Quem</label>
-                            <div className="flex items-center gap-3">
-                                <Users size={20} className="text-amber-400" />
-                                <select
-                                    value={guests}
-                                    onChange={(e) => setGuests(e.target.value)}
-                                    className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-white w-full outline-none appearance-none cursor-pointer"
-                                >
-                                    <option className="bg-black">1 Pessoa</option>
-                                    <option className="bg-black">2 Pessoas</option>
-                                    <option className="bg-black">3 Pessoas</option>
-                                    <option className="bg-black">4+ Pessoas</option>
-                                </select>
-                                <ChevronDown size={14} className="text-gray-600" />
-                            </div>
-                        </div>
-                        <div className="p-2">
-                            <button className="w-full bg-amber-400 h-16 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-amber-300 transition shadow-xl shadow-amber-500/20 active:scale-95 group">
-                                <Search size={24} className="text-black group-hover:scale-110 transition" />
-                                <span className="text-black font-black text-sm uppercase tracking-widest">Buscar destinos</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+           <Searchbar></Searchbar>
 
 
             <main id="destinos" className="max-w-7xl mx-auto px-6 py-32">
