@@ -73,6 +73,7 @@ function Home() {
                         <div className="flex flex-wrap gap-6">
                             <button className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition active:scale-95">EXPLORAR AGORA</button>
                             <Link to="/galeria" className="px-10 py-5 bg-white/5 border border-white/10 font-black rounded-2xl hover:bg-white/10 transition backdrop-blur-md">Ver Galeria</Link>
+                            <Link to="/residence-registration" className="px-10 py-5 bg-white/5 border border-white/10 font-black rounded-2xl hover:bg-white/10 transition backdrop-blur-md">Cadastrar Propriedade</Link>
                         </div>
                     </div>
 
