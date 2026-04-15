@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import DatePicker, { registerLocale } from 'react-datepicker'
 import { ptBR } from 'date-fns/locale/pt-BR'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -28,7 +28,10 @@ registerLocale('pt-BR', ptBR)
 
 function GuestReservations() {
     const navigate = useNavigate()
+    const location = useLocation()
+    const formRef = useRef(null)
     const [selectedAccommodation, setSelectedAccommodation] = useState(null)
+    const [preSelected, setPreSelected] = useState(false)
     const [reservationData, setReservationData] = useState({
         name: '',
         email: '',
@@ -46,6 +49,21 @@ function GuestReservations() {
     const [bedsFilter, setBedsFilter] = useState('all')
     const [amenitiesFilter, setAmenitiesFilter] = useState('all')
     const [showFilters, setShowFilters] = useState(false)
+
+    // Ler o hotel pré-selecionado vindo da tela de hospedagem
+    useEffect(() => {
+        if (location.state?.selectedAccommodation) {
+            const incoming = location.state.selectedAccommodation
+            // Garantir que o objeto tem o campo 'name' (acommodations.jsx usa 'title')
+            const normalized = { ...incoming, name: incoming.name || incoming.title }
+            setSelectedAccommodation(normalized)
+            setPreSelected(true)
+            // Scroll suave até o formulário de reserva após um breve delay
+            setTimeout(() => {
+                formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 300)
+        }
+    }, [location.state])
 
     const accommodations = [
         {
@@ -195,6 +213,12 @@ function GuestReservations() {
                         <p className="text-xl text-gray-300 max-w-2xl">
                             Escolha a hospedagem perfeita em Maraú e reserve suas próximas férias.
                         </p>
+                        {preSelected && selectedAccommodation && (
+                            <div className="mt-4 inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/50 rounded-full px-4 py-2 text-amber-300 text-sm font-semibold">
+                                <Check size={16} />
+                                Hospedagem selecionada: <span className="font-black text-amber-400">{selectedAccommodation.name}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -430,7 +454,7 @@ function GuestReservations() {
 
             {/* Modal de Reserva */}
             {selectedAccommodation && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div ref={formRef} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-[#0a0a0a] rounded-3xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         {/* Header */}
                         <div className="sticky top-0 flex justify-between items-center p-6 border-b border-white/10 bg-[#0a0a0a]/95 backdrop-blur">
