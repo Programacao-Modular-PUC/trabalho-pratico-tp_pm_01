@@ -1,4 +1,5 @@
 import React, { useState, forwardRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DatePicker, { registerLocale } from 'react-datepicker'
 import { ptBR } from 'date-fns/locale/pt-BR'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -15,6 +16,7 @@ import Searchbar from '../components/searchbar'
 registerLocale('pt-BR', ptBR)
 
 function Hospedagem() {
+    const navigate = useNavigate()
     const [location] = useState('Península de Maraú, Bahia')
     const [startDate, setStartDate] = useState(null)
     const [endDate, setEndDate] = useState(null)
@@ -23,52 +25,88 @@ function Hospedagem() {
 
     const lodgings = [
         {
+            id: 1,
             title: 'Bangalô da Maraú',
+            name: 'Bangalô da Maraú',
             location: 'Barra Grande',
             description: 'Bangalô com piscina privativa, vista para o mar e amenidades de luxo.',
-            price: 'R$ 620',
+            price: 620,
             rating: '4.9',
-            img: '/img/praia_de_algodoes.jpg'
+            img: '/img/praia_de_algodoes.jpg',
+            beds: 1,
+            bathrooms: 1,
+            maxGuests: 2,
+            amenities: ['WiFi', 'Piscina privativa', 'TV 4K', 'Ar condicionado', 'Varanda com vista']
         },
         {
+            id: 2,
             title: 'Villa Pontal do Mutá',
+            name: 'Villa Pontal do Mutá',
             location: 'Ponta do Mutá',
             description: 'Casa ampla com deck, cozinha gourmet e serviço de concierge local.',
-            price: 'R$ 1.150',
+            price: 1150,
             rating: '5.0',
-            img: '/img/praia-do-muta.jpg'
+            img: '/img/praia-do-muta.jpg',
+            beds: 3,
+            bathrooms: 2,
+            maxGuests: 6,
+            amenities: ['WiFi Premium', 'Cozinha gourmet', 'Deck amplo', 'Concierge 24h', 'Frigobar']
         },
         {
+            id: 3,
             title: 'Suíte Roots',
+            name: 'Suíte Roots',
             location: 'Três Coqueiros',
             description: 'Suíte charmosa com decoração rústica, ideal para casais.',
-            price: 'R$ 380',
+            price: 380,
             rating: '4.7',
-            img: '/img/praia_de_tres_coqueiros.jpg'
+            img: '/img/praia_de_tres_coqueiros.jpg',
+            beds: 1,
+            bathrooms: 1,
+            maxGuests: 2,
+            amenities: ['WiFi', 'Ar condicionado', 'Decoração rústica', 'Café da manhã', 'Varanda']
         },
         {
+            id: 4,
             title: 'Refúgio do Cassange',
+            name: 'Refúgio do Cassange',
             location: 'Cassange',
             description: 'Refúgio exclusivo junto à lagoa, perfeito para relaxar em família.',
-            price: 'R$ 540',
+            price: 540,
             rating: '4.8',
-            img: '/img/praia_do_cassange.jpg'
+            img: '/img/praia_do_cassange.jpg',
+            beds: 2,
+            bathrooms: 1,
+            maxGuests: 4,
+            amenities: ['WiFi', 'Vista para lagoa', 'Ar condicionado', 'Área de estar', 'Kitchenette']
         },
         {
+            id: 5,
             title: 'Pousada Trilha do Sol',
+            name: 'Pousada Trilha do Sol',
             location: 'Barra Grande',
             description: 'Pousada com piscina ao ar livre, café da manhã regional e atmosfera acolhedora.',
-            price: 'R$ 460',
+            price: 460,
             rating: '4.8',
-            img: '/img/praia_barra_grande.jpg'
+            img: '/img/praia_barra_grande.jpg',
+            beds: 1,
+            bathrooms: 1,
+            maxGuests: 2,
+            amenities: ['WiFi', 'Piscina', 'Café da manhã', 'Restaurante', 'Bar']
         },
         {
+            id: 6,
             title: 'Casa do Farol',
+            name: 'Casa do Farol',
             location: 'Pontal do Mutá',
             description: 'Casa de temporada com vista panorâmica, varanda espaçosa e acesso à praia.',
-            price: 'R$ 980',
+            price: 980,
             rating: '4.9',
-            img: '/img/praia-do-muta.jpg'
+            img: '/img/praia-do-muta.jpg',
+            beds: 2,
+            bathrooms: 2,
+            maxGuests: 4,
+            amenities: ['WiFi', 'Vista panorâmica', 'Varanda espaçosa', 'Acesso à praia', 'Ar condicionado']
         }
     ]
 
@@ -117,7 +155,10 @@ function Hospedagem() {
                             Explore acomodações cuidadosamente selecionadas em Maraú, com ofertas que combinam conforto, natureza e experiências exclusivas.
                         </p>
                         <div className="flex flex-wrap gap-6">
-                            <button className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition active:scale-95">
+                            <button
+                                onClick={() => navigate('/reservas')}
+                                className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition active:scale-95"
+                            >
                                 Reserve agora
                             </button>
                             <a href="#acomodacoes" className="px-10 py-5 bg-white/5 border border-white/10 font-black rounded-2xl hover:bg-white/10 transition backdrop-blur-md inline-flex items-center justify-center">
@@ -152,11 +193,21 @@ function Hospedagem() {
 
                 <section id="acomodacoes" className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredLodgings.map((item, index) => (
-                        <div key={index} className="group cursor-pointer">
+                        <div
+                            key={index}
+                            className="group cursor-pointer"
+                            onClick={() => navigate('/reservas', { state: { selectedAccommodation: item } })}
+                        >
                             <div className="relative overflow-hidden rounded-[2.5rem] aspect-[4/5] mb-6">
                                 <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
                                 <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-xs font-black border border-white/10">
                                     <Star size={14} className="text-amber-400 fill-amber-400" /> {item.rating}
+                                </div>
+                                {/* Overlay de clique */}
+                                <div className="absolute inset-0 bg-amber-400/0 group-hover:bg-amber-400/10 transition-colors duration-300 rounded-[2.5rem] flex items-end justify-center pb-6 opacity-0 group-hover:opacity-100">
+                                    <span className="bg-amber-400 text-black font-black text-sm px-6 py-2 rounded-full shadow-lg translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                        Reservar agora →
+                                    </span>
                                 </div>
                             </div>
                             <div className="flex justify-between items-start gap-4">
@@ -166,7 +217,7 @@ function Hospedagem() {
                                     <p className="text-gray-400 text-sm leading-relaxed">{item.description}</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xl font-black text-white">{item.price}</span>
+                                    <span className="text-xl font-black text-white">R$ {item.price.toLocaleString('pt-BR')}</span>
                                     <p className="text-[10px] uppercase text-amber-400 font-black tracking-widest mt-1">por noite</p>
                                 </div>
                             </div>
