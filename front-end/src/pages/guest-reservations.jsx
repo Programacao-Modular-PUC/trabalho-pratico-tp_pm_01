@@ -16,6 +16,8 @@ import {
     Mail,
     AlertCircle,
     Star,
+    Filter,
+    ChevronDown,
     Wifi,
     Coffee,
     Tv,
@@ -41,6 +43,12 @@ function GuestReservations() {
     })
     const [successMessage, setSuccessMessage] = useState('')
     const [errors, setErrors] = useState({})
+    const [searchTerm, setSearchTerm] = useState('')
+    const [priceFilter, setPriceFilter] = useState('all')
+    const [locationFilter, setLocationFilter] = useState('all')
+    const [bedsFilter, setBedsFilter] = useState('all')
+    const [amenitiesFilter, setAmenitiesFilter] = useState('all')
+    const [showFilters, setShowFilters] = useState(false)
 
     // Ler o hotel pré-selecionado vindo da tela de hospedagem
     useEffect(() => {
@@ -138,6 +146,28 @@ function GuestReservations() {
         }
     ]
 
+    // Filtrar acomodações
+    const filteredAccommodations = accommodations.filter(acc => {
+        const matchesSearch = acc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            acc.location.toLowerCase().includes(searchTerm.toLowerCase())
+        
+        const matchesPrice = priceFilter === 'all' ||
+                           (priceFilter === 'budget' && acc.price < 500) ||
+                           (priceFilter === 'medium' && acc.price >= 500 && acc.price < 1000) ||
+                           (priceFilter === 'luxury' && acc.price >= 1000)
+        
+        const matchesLocation = locationFilter === 'all' || acc.location === locationFilter
+        
+        const matchesBeds = bedsFilter === 'all' || acc.beds.toString() === bedsFilter
+        
+        const matchesAmenities = amenitiesFilter === 'all' || acc.amenities.includes(amenitiesFilter)
+        
+        return matchesSearch && matchesPrice && matchesLocation && matchesBeds && matchesAmenities
+    })
+
+    const locations = [...new Set(accommodations.map(acc => acc.location))]
+    const allAmenities = [...new Set(accommodations.flatMap(acc => acc.amenities))]
+
     const validateReservation = () => {
         const newErrors = {}
         // Validar apenas datas se ambas forem preenchidas
@@ -203,9 +233,146 @@ function GuestReservations() {
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-8 py-16">
+                {/* Search and Filters Bar */}
+                <div className="mb-8 space-y-4">
+                    <div className="flex gap-4 items-center flex-wrap">
+                        <div className="flex-1 min-w-64">
+                            <input
+                                type="text"
+                                placeholder="Buscar por nome ou localização..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors flex items-center gap-2"
+                        >
+                            <Filter size={20} />
+                            Filtros
+                            <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                        </button>
+                    </div>
+
+                    {/* Filters Dropdown */}
+                    {showFilters && (
+                        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10 grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {/* Price Filter */}
+                            <div>
+                                <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">
+                                    Faixa de Preço
+                                </label>
+                                <select
+                                    value={priceFilter}
+                                    onChange={(e) => setPriceFilter(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                                    style={{
+                                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 10px center',
+                                        backgroundSize: '20px',
+                                        paddingRight: '40px'
+                                    }}
+                                >
+                                    <option value="all" style={{ background: '#1a1a1a', color: 'white' }}>Todos os preços</option>
+                                    <option value="budget" style={{ background: '#1a1a1a', color: 'white' }}>Até R$ 500</option>
+                                    <option value="medium" style={{ background: '#1a1a1a', color: 'white' }}>R$ 500 - R$ 1.000</option>
+                                    <option value="luxury" style={{ background: '#1a1a1a', color: 'white' }}>Acima de R$ 1.000</option>
+                                </select>
+                            </div>
+
+                            {/* Location Filter */}
+                            <div>
+                                <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">
+                                    Localização
+                                </label>
+                                <select
+                                    value={locationFilter}
+                                    onChange={(e) => setLocationFilter(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                                    style={{
+                                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 10px center',
+                                        backgroundSize: '20px',
+                                        paddingRight: '40px'
+                                    }}
+                                >
+                                    <option value="all" style={{ background: '#1a1a1a', color: 'white' }}>Todas as localizações</option>
+                                    {locations.map(location => (
+                                        <option key={location} value={location} style={{ background: '#1a1a1a', color: 'white' }}>
+                                            {location}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Beds Filter */}
+                            <div>
+                                <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">
+                                    Número de Camas
+                                </label>
+                                <select
+                                    value={bedsFilter}
+                                    onChange={(e) => setBedsFilter(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                                    style={{
+                                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 10px center',
+                                        backgroundSize: '20px',
+                                        paddingRight: '40px'
+                                    }}
+                                >
+                                    <option value="all" style={{ background: '#1a1a1a', color: 'white' }}>Todas as camas</option>
+                                    <option value="1" style={{ background: '#1a1a1a', color: 'white' }}>1 cama</option>
+                                    <option value="2" style={{ background: '#1a1a1a', color: 'white' }}>2 camas</option>
+                                    <option value="3" style={{ background: '#1a1a1a', color: 'white' }}>3 ou mais camas</option>
+                                </select>
+                            </div>
+
+                            {/* Amenities Filter */}
+                            <div>
+                                <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">
+                                    Amenidades
+                                </label>
+                                <select
+                                    value={amenitiesFilter}
+                                    onChange={(e) => setAmenitiesFilter(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                                    style={{
+                                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 10px center',
+                                        backgroundSize: '20px',
+                                        paddingRight: '40px'
+                                    }}
+                                >
+                                    <option value="all" style={{ background: '#1a1a1a', color: 'white' }}>Todas as amenidades</option>
+                                    {allAmenities.map(amenity => (
+                                        <option key={amenity} value={amenity} style={{ background: '#1a1a1a', color: 'white' }}>
+                                            {amenity}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Results Count */}
+                            <div className="flex items-end">
+                                <div className="text-sm">
+                                    <p className="text-gray-400 mb-1">Resultados</p>
+                                    <p className="text-3xl font-bold text-amber-400">{filteredAccommodations.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Accommodations Grid */}
+                {filteredAccommodations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {accommodations.map(accommodation => (
+                    {filteredAccommodations.map(accommodation => (
                         <div
                             key={accommodation.id}
                             onClick={() => setSelectedAccommodation(accommodation)}
@@ -275,6 +442,14 @@ function GuestReservations() {
                         </div>
                     ))}
                 </div>
+                ) : (
+                    <div className="text-center py-16">
+                        <AlertCircle size={48} className="text-gray-600 mx-auto mb-4" />
+                        <p className="text-gray-400 text-lg">
+                            Nenhuma acomodação encontrada com os filtros selecionados.
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Modal de Reserva */}
