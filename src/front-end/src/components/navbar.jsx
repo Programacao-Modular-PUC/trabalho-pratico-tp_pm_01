@@ -16,6 +16,7 @@ function Navbar() {
                         <a href="/" className="hover:text-amber-400 transition">Início</a>
                         <Link to='/destinos' className="hover:text-amber-400 transition">Destinos</Link>
                         <Link to='/hospedagem' className="hover:text-amber-400 transition">Hospedagem</Link>
+                        <Link to='/reservas' className="hover:text-amber-400 transition">Reservas</Link>
                         <Link to='/sobre' className="hover:text-amber-400 transition">Sobre</Link>
                     </div>
                     <div className="flex items-center gap-6 border-l border-white/10 pl-10">

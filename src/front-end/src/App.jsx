@@ -10,6 +10,7 @@ import Login from "./pages/login"
 import Register from "./pages/register"
 import SaibaMais from "./pages/learn-more.jsx"
 import Gallery from "./pages/gallery.jsx"
+import GuestReservations from "./pages/guest-reservations.jsx"
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/saiba-mais" element={<SaibaMais />} />
           <Route path="/galeria" element={<Gallery />} />
+          <Route path="/reservas" element={<GuestReservations />} />
         </Route>
 
         {/* Rotas sem navbar */}
