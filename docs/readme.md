@@ -87,6 +87,7 @@ Abaixo estão detalhados os cartões CRC que guiaram a modelagem orientada a obj
 ## 📊 Diagramas de Classe (UML - Domain Models)
 
 Abaixo estão as representações das entidades principais que compõem a camada `Model` do sistema.
+![Diagrama de UML - de classes ](imagens/Diagrama_de_UML.png "Diagrama de UML.")
 
 ```text
 ---------------------------------------------------------
