@@ -17,6 +17,7 @@ import AddResidence from './pages/AddResidence';
 import Bookings from './pages/Bookings';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
+import { Link } from 'react-router-dom';
 
 function HostLayout() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -108,7 +109,9 @@ function HostLayout() {
                 <div className="px-4 py-6 border-t border-slate-700/50 mt-auto space-y-3">
                     <button className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all font-semibold">
                         <LogOut className="w-5 h-5" />
-                        <span>Sair</span>
+                        <Link to="/login" className="text-red-400 hover:text-red-300">
+                            Sair
+                        </Link>
                     </button>
                 </div>
             </div>
@@ -126,7 +129,7 @@ function HostLayout() {
                     <div className="flex-1" />
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold">JD</span>
+                            <span className="text-white font-bold">T</span>
                         </div>
                     </div>
                 </div>

@@ -11,7 +11,6 @@ function Navbar() {
         { to: "/hospedagem", label: "Hospedagem" },
         { to: "/reservas", label: "Reservas" },
         { to: "/sobre", label: "Sobre" },
-        { to: "/residence-registration", label: "Cadastrar Residência" },
     ]
 
     return (

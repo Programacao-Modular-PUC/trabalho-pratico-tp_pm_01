@@ -1,15 +1,25 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
 
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
+    const navigate = useNavigate()
 
     const handleSubmit = (event) => {
         event.preventDefault()
-        // Aqui você pode chamar a API de login ou validar o formulário.
-        console.log('Login:', { email, password })
+        setError('')
+
+        // Simulação de login
+        if (email === 'acessoguest@gmail.com' && password === 'testguest') {
+            navigate('/guest')
+        } else if (email === 'acessohost@gmail.com' && password === 'testhost') {
+            navigate('/host')
+        } else {
+            setError('Credenciais inválidas. Tente novamente.')
+        }
     }
 
     return (
@@ -87,11 +97,24 @@ function Login() {
                             </div>
                         </form>
 
+                        {error && (
+                            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="mt-10 rounded-3xl bg-white/5 border border-white/10 p-5 text-sm text-gray-400">
                             Ainda não tem acesso?
                             <Link to="/register" className="text-amber-400 font-bold hover:text-amber-300 ml-1">
                                 Crie sua conta agora.
                             </Link>
+                        </div>
+
+                        {/* Credenciais de teste */}
+                        <div className="mt-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 p-5 text-sm">
+                            <p className="text-amber-400 font-bold mb-2">Credenciais de Teste:</p>
+                            <p className="text-gray-300"><strong>Guest:</strong> acessoguest@gmail.com / testguest</p>
+                            <p className="text-gray-300"><strong>Host:</strong> acessohost@gmail.com / testhost</p>
                         </div>
                     </div>
                 </div>
