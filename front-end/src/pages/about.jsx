@@ -183,7 +183,7 @@ function About() {
                         </div>
                         <div className="bg-[#111] border border-white/10 p-8 rounded-[2rem] hover:bg-white/5 transition">
                             <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full mx-auto mb-6 flex items-center justify-center overflow-hidden">
-                                <img src="" alt="Luca Moreira" className="w-full h-full object-cover"  />
+                                <img src="/img/imagem_luca.jpg" alt="Luca Moreira" className="w-full h-full object-cover"  />
                                 <Users className="text-white" size={32} style={{ display: 'none' }} />
                             </div>
                             <h4 className="text-xl font-bold mb-2">Luca Moreira</h4>
