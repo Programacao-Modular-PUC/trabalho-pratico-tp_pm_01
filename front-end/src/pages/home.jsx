@@ -49,7 +49,7 @@ function Home() {
 
 
             {/* NAVBAR */}
-            
+
 
             {/* HERO SECTION */}
             <header id="hospedagem" className="relative pt-40 pb-24 lg:pt-56 lg:pb-40 overflow-hidden">
@@ -71,9 +71,8 @@ function Home() {
                             Descubra residências exclusivas em Maraú, onde o conforto encontra a preservação ambiental. Sua jornada inesquecível começa aqui.
                         </p>
                         <div className="flex flex-wrap gap-6">
-                            <button className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition active:scale-95">EXPLORAR AGORA</button>
+                            <Link to="/destinos" className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition active:scale-95">Explorar Agora</Link>
                             <Link to="/galeria" className="px-10 py-5 bg-white/5 border border-white/10 font-black rounded-2xl hover:bg-white/10 transition backdrop-blur-md">Ver Galeria</Link>
-                            <Link to="/residence-registration" className="px-10 py-5 bg-white/5 border border-white/10 font-black rounded-2xl hover:bg-white/10 transition backdrop-blur-md">Cadastrar Propriedade</Link>
                         </div>
                     </div>
 
@@ -105,9 +104,9 @@ function Home() {
 
                 <section className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
                     {[
-                        { title: "Bangalô Tropical", price: "R$ 450", rating: "4.9", img: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&q=80" },
-                        { title: "Villa Maré Alta", price: "R$ 1.200", rating: "5.0", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80" },
-                        { title: "Suíte Roots", price: "R$ 320", rating: "4.8", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80" }
+                        { title: "Villa do Pontal", price: "R$ 1.150", rating: "5.0", img: "img/vila_pontal.jpg" },
+                        { title: "Bangalô Tropical", price: "R$ 620", rating: "4.9", img: "img/bangalo.jpg" },
+                        { title: "Suíte Roots", price: "R$ 380", rating: "4.8", img: "img/suite_roots.jpg" }
                     ].map((item, i) => (
                         <div key={i} className="group cursor-pointer">
                             <div className="relative overflow-hidden rounded-[2.5rem] aspect-[4/5] mb-6">

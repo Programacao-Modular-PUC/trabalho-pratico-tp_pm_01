@@ -10,10 +10,8 @@ import Login from "./pages/login"
 import Register from "./pages/register"
 import SaibaMais from "./pages/learn-more.jsx"
 import Gallery from "./pages/gallery.jsx"
-import GuestReservations from "./pages/guest-reservations.jsx"
-import ResidenceRegistration from "./pages/residence-registration.jsx"
 import HostDashboard from "./modules/host/HostLayout.jsx"
-import Guest from "./pages/guest.jsx"
+import Guest from "./modules/guest/GuestLayout.jsx"
 
 function App() {
   return (
@@ -28,13 +26,11 @@ function App() {
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/saiba-mais" element={<SaibaMais />} />
           <Route path="/galeria" element={<Gallery />} />
-          <Route path="/reservas" element={<GuestReservations />} />
         </Route>
 
         {/* Rotas sem navbar */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/residence-registration" element={<ResidenceRegistration />} />
         <Route path="/host" element={<HostDashboard />} />
         <Route path="/guest" element={<Guest />} />
         <Route path="*" element={<h1 className="text-center mt-20 text-3xl font-bold">404 - Página Não Encontrada</h1>} />

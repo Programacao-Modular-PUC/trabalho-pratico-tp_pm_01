@@ -9,7 +9,6 @@ function Navbar() {
         { to: "/", label: "Início" },
         { to: "/destinos", label: "Destinos" },
         { to: "/hospedagem", label: "Hospedagem" },
-        { to: "/reservas", label: "Reservas" },
         { to: "/sobre", label: "Sobre" },
     ]
 
