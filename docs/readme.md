@@ -87,9 +87,9 @@ Abaixo estão detalhados os cartões CRC que guiaram a modelagem orientada a obj
 ## 📊 Diagramas de Classe (UML - Domain Models)
 
 Abaixo estão as representações das entidades principais que compõem a camada `Model` do sistema.
-![Diagrama de UML - de classes ](imagens/Diagrama_de_UML.png "Diagrama de UML.")
+![Diagrama de UML - de classes ](imagens/Diagrama_de_UML_corrigido.png "Diagrama de UML.")
 
-```text
+
 ---------------------------------------------------------
 |                      Residencia                       |
 ---------------------------------------------------------
@@ -110,19 +110,117 @@ Abaixo estão as representações das entidades principais que compõem a camada
 ---------------------------------------------------------
 
 ---------------------------------------------------------
-|                        Quarto                         |
+|                        Quarto (ABSTRACT)              |
 ---------------------------------------------------------
 | - id: Long                                            |
-| - tipo: String                                        |
 | - valorBase: Double                                   |
 | - possuiArCondicionado: Boolean                       |
 | - possuiHidromassagem: Boolean                        |
 | - residencia: Residencia                              |
 ---------------------------------------------------------
-| + calcularValorDiaria(): Double                       |
+| + calcularValorDiaria(hospedes: Integer): Double      |
 | + verificarDisponibilidade(entrada: LocalDateTime,    |
 |                            saida: LocalDateTime):     |
 |                            Boolean                    |
+---------------------------------------------------------
+
+---------------------- HERANÇA --------------------------
+
+---------------------------------------------------------
+|                   QuartoIndividual                    |
+---------------------------------------------------------
+| - quantidadeCamasSolteiro: Integer                    |
+| - valorAdicionalPorCama: Double                       |
+---------------------------------------------------------
+| + calcularValorDiaria(hospedes: Integer): Double      |
+| + calcularLimiteHospedes(): Integer                   |
+---------------------------------------------------------
+
+REGRAS:
+- Não permite berço
+- Valor = valorBase + adicional por cama (se >1 cama)
+- Limite de hóspedes proporcional às camas
+
+---------------------------------------------------------
+|                      QuartoDuplo                      |
+---------------------------------------------------------
+| - tipoCama: TipoCamaCasal                             |
+| - possuiBercoSolicitado: Boolean                      |
+| - valorAdicionalConforto: Double                      |
+| - taxaBerco: Double                                   |
+---------------------------------------------------------
+| + calcularValorDiaria(hospedes: Integer): Double      |
+| + possuiBerco(): Boolean                              |
+---------------------------------------------------------
+
+REGRAS:
+- Pode ter cama casal, queen ou king
+- Berço é opcional (sob solicitação)
+- Taxa extra se solicitar berço
+- Adicional por tipo de cama
+
+---------------------------------------------------------
+|                     QuartoFamilia                     |
+---------------------------------------------------------
+| - configuracaoCamas: List<Cama>                       |
+| - ambientes: List<TipoAmbiente>                       |
+| - percentualPorHospede: Double                        |
+| - descontoGrupo: DescontoGrupo                        |
+---------------------------------------------------------
+| + calcularValorDiaria(hospedes: Integer): Double      |
+| + calcularCapacidadeMaxima(): Integer                 |
+| + descreverConfiguracao(): String                     |
+---------------------------------------------------------
+
+REGRAS:
+- Mistura de camas (solteiro, casal, etc)
+- Cálculo baseado em número de hóspedes
+- Valor = valorBase + (% * número de hóspedes)
+- Desconto progressivo para grupos
+
+---------------------- ENUMS ----------------------------
+
+---------------------------------------------------------
+|                    <<enum>> TipoQuarto                |
+---------------------------------------------------------
+| INDIVIDUAL                                           |
+| DUPLO                                                |
+| FAMILIA                                              |
+---------------------------------------------------------
+
+---------------------------------------------------------
+|                 <<enum>> TipoCamaCasal                |
+---------------------------------------------------------
+| CASAL_PADRAO                                         |
+| QUEEN                                                |
+| KING                                                 |
+---------------------------------------------------------
+
+---------------------------------------------------------
+|                      <<enum>> Cama                    |
+---------------------------------------------------------
+| SOLTEIRO                                             |
+| CASAL                                                |
+| QUEEN                                                |
+| KING                                                 |
+| BERCO                                                |
+---------------------------------------------------------
+
+---------------------------------------------------------
+|                 <<enum>> TipoAmbiente                 |
+---------------------------------------------------------
+| DORMITORIO                                           |
+| ESTUDO                                               |
+| HOME_OFFICE                                          |
+| SALA_ESTAR                                           |
+---------------------------------------------------------
+
+---------------------------------------------------------
+|                <<enum>> DescontoGrupo                 |
+---------------------------------------------------------
+| A_PARTIR_3_HOSPEDES_5PORCENTO                        |
+| A_PARTIR_5_HOSPEDES_10PORCENTO                       |
+| A_PARTIR_8_HOSPEDES_15PORCENTO                       |
 ---------------------------------------------------------
 
 ---------------------------------------------------------
@@ -148,7 +246,7 @@ Abaixo estão as representações das entidades principais que compõem a camada
 | - cliente: Cliente                                    |
 | - dataEntrada: LocalDateTime                          |
 | - dataSaida: LocalDateTime                            |
-| - quantidadeDiarias: Integer                          |
+| - quantidadeHospedes: Integer                         |
 | - valorFinal: Double                                  |
 | - pagamento: Pagamento                                |
 ---------------------------------------------------------
