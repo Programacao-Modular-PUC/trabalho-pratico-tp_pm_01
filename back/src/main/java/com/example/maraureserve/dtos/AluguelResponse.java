@@ -17,6 +17,8 @@ public record AluguelResponse(
         LocalDateTime dataSaida,
         Integer quantidadeHospedes,
         Integer quantidadeDiarias,
+        Boolean bercoSolicitado,
+        BigDecimal valorDiaria,
         BigDecimal valorFinal) {
 
     public static AluguelResponse fromEntity(Aluguel aluguel) {
@@ -32,6 +34,8 @@ public record AluguelResponse(
                 aluguel.getDataSaida(),
                 aluguel.getQuantidadeHospedes(),
                 aluguel.getQuantidadeDiarias(),
+                aluguel.getBercoSolicitado(),
+                aluguel.getValorDiaria(),
                 aluguel.getValorFinal());
     }
 }

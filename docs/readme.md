@@ -278,3 +278,93 @@ REGRAS:
 ---------------------------------------------------------
 | + imprimirFormulario(): void                          |
 ---------------------------------------------------------
+
+## Diagrama de Classes Atualizado - Sprint 2
+
+```mermaid
+classDiagram
+    class Residencia {
+        Long id
+        String endereco
+        String numero
+        String bairro
+        String cep
+        String telefone
+        String email
+        List~Quarto~ quartos
+        List~Aluguel~ alugueis
+    }
+
+    class Quarto {
+        Long id
+        String codigo
+        TipoQuarto tipo
+        BigDecimal valorBase
+        Boolean possuiArCondicionado
+        Boolean possuiHidromassagem
+        Integer capacidadeMaxima
+        Integer quantidadeCamasSolteiro
+        Integer quantidadeCamasCasal
+        Integer quantidadeCamasQueen
+        Integer quantidadeCamasKing
+        Integer quantidadeAmbientes
+        Boolean permiteBerco
+        TipoCamaCasal tipoCamaCasal
+        BigDecimal valorAdicionalPorCamaSolteiro
+        BigDecimal valorAdicionalCamaCasal
+        BigDecimal valorAdicionalCamaQueenKing
+        BigDecimal taxaBerco
+        BigDecimal percentualAdicionalPorHospede
+        BigDecimal calcularValorDiaria(Integer hospedes, Boolean bercoSolicitado)
+        Integer calcularCapacidadeMaxima()
+    }
+
+    class Cliente {
+        Long id
+        String nome
+        String cpf
+        String endereco
+        String telefone
+        String email
+        List~Aluguel~ alugueis
+    }
+
+    class Aluguel {
+        Long id
+        LocalDateTime dataEntrada
+        LocalDateTime dataSaida
+        Integer quantidadeHospedes
+        Integer quantidadeDiarias
+        Boolean bercoSolicitado
+        BigDecimal valorDiaria
+        BigDecimal valorFinal
+    }
+
+    class TipoQuarto {
+        <<enumeration>>
+        INDIVIDUAL
+        DUPLO
+        CASAL
+        FAMILIA
+    }
+
+    class TipoCamaCasal {
+        <<enumeration>>
+        CASAL_PADRAO
+        QUEEN
+        KING
+    }
+
+    Residencia "1" --> "*" Quarto
+    Residencia "1" --> "*" Aluguel
+    Quarto "1" --> "*" Aluguel
+    Cliente "1" --> "*" Aluguel
+    Quarto --> TipoQuarto
+    Quarto --> TipoCamaCasal
+```
+
+Regras implementadas:
+
+- Quarto individual: usa uma ou mais camas de solteiro, nao permite berco, calcula diaria como valor base mais adicional por cama extra.
+- Quarto duplo/casal: usa cama casal padrao, queen ou king, permite berco opcional quando configurado, soma taxa de berco e adicional de conforto.
+- Quarto familia: calcula capacidade pela mistura de camas, exige quantidade de ambientes e calcula diaria por hospedes com desconto progressivo para grupos.
