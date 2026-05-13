@@ -72,7 +72,52 @@ public class QuartoService {
         quarto.setValorBase(request.valorBase());
         quarto.setPossuiArCondicionado(request.possuiArCondicionado());
         quarto.setPossuiHidromassagem(request.possuiHidromassagem());
-        quarto.setCapacidadeMaxima(request.capacidadeMaxima());
+        quarto.setQuantidadeCamasSolteiro(request.quantidadeCamasSolteiro());
+        quarto.setQuantidadeCamasCasal(request.quantidadeCamasCasal());
+        quarto.setQuantidadeCamasQueen(request.quantidadeCamasQueen());
+        quarto.setQuantidadeCamasKing(request.quantidadeCamasKing());
+        quarto.setQuantidadeAmbientes(request.quantidadeAmbientes());
+        quarto.setValorAdicionalPorCamaSolteiro(request.valorAdicionalPorCamaSolteiro());
+        quarto.setValorAdicionalCamaCasal(request.valorAdicionalCamaCasal());
+        quarto.setValorAdicionalCamaQueenKing(request.valorAdicionalCamaQueenKing());
+        quarto.setTaxaBerco(request.taxaBerco());
+        quarto.setPercentualAdicionalPorHospede(request.percentualAdicionalPorHospede());
+        quarto.setPermiteBerco(request.permiteBerco());
+        quarto.setTipoCamaCasal(request.tipoCamaCasal());
+        quarto.setCapacidadeMaxima(resolveCapacidadeMaxima(quarto, request.capacidadeMaxima()));
         quarto.setResidencia(residencia);
+        validarConfiguracao(quarto);
+    }
+
+    private Integer resolveCapacidadeMaxima(Quarto quarto, Integer capacidadeInformada) {
+        Integer capacidadeCalculada = quarto.calcularCapacidadeMaxima();
+        if (capacidadeCalculada != null && capacidadeCalculada > 0) {
+            return capacidadeCalculada;
+        }
+        return capacidadeInformada;
+    }
+
+    private void validarConfiguracao(Quarto quarto) {
+        switch (quarto.getTipo()) {
+            case INDIVIDUAL -> {
+                if (quarto.getQuantidadeCamasSolteiro() == null || quarto.getQuantidadeCamasSolteiro() < 1) {
+                    throw new BusinessException("Quarto individual deve ter pelo menos uma cama de solteiro.");
+                }
+                quarto.setPermiteBerco(false);
+            }
+            case DUPLO, CASAL -> {
+                if (quarto.getTipoCamaCasal() == null) {
+                    throw new BusinessException("Quarto duplo deve informar o tipo da cama de casal.");
+                }
+            }
+            case FAMILIA -> {
+                if (quarto.getCapacidadeMaxima() == null || quarto.getCapacidadeMaxima() < 1) {
+                    throw new BusinessException("Quarto familia deve ter configuracao de camas com capacidade positiva.");
+                }
+                if (quarto.getQuantidadeAmbientes() == null || quarto.getQuantidadeAmbientes() < 1) {
+                    throw new BusinessException("Quarto familia deve informar pelo menos um ambiente.");
+                }
+            }
+        }
     }
 }
