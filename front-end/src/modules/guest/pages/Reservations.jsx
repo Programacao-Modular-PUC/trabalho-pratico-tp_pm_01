@@ -13,6 +13,9 @@ function formatCurrency(value) {
 }
 
 function statusForReservation(item) {
+    // Prioriza o status enviado pelo back-end. Se não vier, faz o fallback baseado na data
+    if (item.status) return item.status;
+
     const now = new Date()
     const start = new Date(item.dataEntrada)
     const end = new Date(item.dataSaida)
@@ -95,7 +98,7 @@ function Reservations() {
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
                                     <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{status}</p>
-                                    <h2 className="mt-3 text-2xl font-semibold text-white">Quarto {item.codigoQuarto}</h2>
+                                    <h2 className="mt-3 text-2xl font-semibold text-white">Quarto {item.codigoQuarto || 'Indisponível'}</h2>
                                     <p className="text-slate-400">{item.enderecoResidencia || 'Marau, Bahia'}</p>
                                 </div>
                                 <span className={`rounded-full px-4 py-2 text-sm font-semibold ${status === 'Confirmada' ? 'bg-emerald-500/15 text-emerald-300' : status === 'Em andamento' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-700/70 text-slate-300'}`}>
@@ -119,10 +122,15 @@ function Reservations() {
                             </div>
 
                             <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Diarias: {item.quantidadeDiarias}</span>
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Diaria: {formatCurrency(item.valorDiaria)}</span>
+                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Diárias: {item.quantidadeDiarias || item.totalDiarias || '-'}</span>
+                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Valor Base/Noite: {formatCurrency(item.valorDiaria)}</span>
+                                {item.taxaLimpeza > 0 && (
+                                    <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Limpeza: {formatCurrency(item.taxaLimpeza)}</span>
+                                )}
                                 {item.bercoSolicitado && (
-                                    <span className="rounded-3xl bg-amber-500/15 px-5 py-3 text-amber-300">Berco solicitado</span>
+                                    <span className="rounded-3xl bg-amber-500/15 px-5 py-3 text-amber-300">
+                                        Berço solicitado {item.taxaBerco ? `(+${formatCurrency(item.taxaBerco)})` : ''}
+                                    </span>
                                 )}
                             </div>
                         </div>
