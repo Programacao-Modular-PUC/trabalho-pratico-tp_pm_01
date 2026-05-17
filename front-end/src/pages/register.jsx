@@ -1,15 +1,45 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { UserPlus, Mail, Lock, ArrowRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { UserPlus, Mail, ArrowRight, Phone, MapPin, IdCard } from 'lucide-react'
+import { api } from '../services/api'
+import { saveSession } from '../services/auth'
+
+const initialForm = {
+    nome: '',
+    cpf: '',
+    endereco: '',
+    telefone: '',
+    email: ''
+}
 
 function Register() {
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [form, setForm] = useState(initialForm)
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
 
-    const handleSubmit = (event) => {
+    const handleChange = (event) => {
+        const { name, value } = event.target
+        setForm((current) => ({ ...current, [name]: value }))
+    }
+
+    const handleSubmit = async (event) => {
         event.preventDefault()
-        console.log('Register:', { name, email, password })
+        setError('')
+        setLoading(true)
+
+        try {
+            const cliente = await api.createCliente({
+                ...form,
+                cpf: form.cpf.replace(/\D/g, '')
+            })
+            saveSession({ role: 'guest', cliente })
+            navigate('/guest')
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -23,92 +53,43 @@ function Register() {
 
             <div className="min-h-screen flex items-center justify-center px-6 py-24">
                 <div className="w-full max-w-6xl grid gap-12 lg:grid-cols-[1.3fr_1fr] items-center">
-                    <div className="space-y-8">
-
-                        <div>
-                            <h1 className="text-5xl lg:text-6xl font-black leading-tight tracking-tighter mb-6">
-                                Crie sua conta no <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">Maraú Reserve</span>
-                            </h1>
-                            <p className="max-w-xl text-gray-400 text-lg leading-relaxed font-medium">
-                                Cadastre-se para acessar promoções exclusivas, gerenciar reservas e aproveitar o melhor de Maraú diretamente pela plataforma.
-                            </p>
-                        </div>
+                    <div>
+                        <h1 className="text-5xl lg:text-6xl font-black leading-tight tracking-tighter mb-6">
+                            Crie sua conta no <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">Marau Reserve</span>
+                        </h1>
+                       
                     </div>
 
                     <div className="rounded-[3rem] bg-[#0d0d0f]/90 border border-white/10 shadow-2xl shadow-black/40 backdrop-blur-xl p-10 sm:p-12">
                         <div className="mb-8">
                             <img src="/icons/icon.png" alt="" className="w-16 h-16 mx-auto" />
                             <h2 className="mt-4 text-3xl font-black">Abra sua conta</h2>
-                            <p className="text-gray-400 mt-3">Preencha os dados e comece a planejar sua próxima viagem.</p>
+                            <p className="text-gray-400 mt-3">Venha viver essa experiência!</p>
                         </div>
 
-                        <form className="space-y-6" onSubmit={handleSubmit}>
-                            <label className="block space-y-3">
-                                <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
-                                    <UserPlus size={16} /> Nome completo
-                                </span>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Seu nome"
-                                    className="w-full rounded-3xl border border-white/10 bg-[#111] px-5 py-4 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                                    required
-                                />
-                            </label>
+                        <form className="space-y-5" onSubmit={handleSubmit}>
+                            <Field icon={<UserPlus size={16} />} label="Nome completo" name="nome" value={form.nome} onChange={handleChange} placeholder="Seu nome" />
+                            <Field icon={<IdCard size={16} />} label="CPF" name="cpf" value={form.cpf} onChange={handleChange} placeholder="Somente numeros" maxLength={14} />
+                            <Field icon={<MapPin size={16} />} label="Endereco" name="endereco" value={form.endereco} onChange={handleChange} placeholder="Rua, numero, bairro" />
+                            <Field icon={<Phone size={16} />} label="Telefone" name="telefone" value={form.telefone} onChange={handleChange} placeholder="(73) 99999-9999" />
+                            <Field icon={<Mail size={16} />} label="Email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="seuemail@gmail.com" />
 
-                            <label className="block space-y-3">
-                                <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
-                                    <Mail size={16} /> E-mail
-                                </span>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="seuemail@gmail.com"
-                                    className="w-full rounded-3xl border border-white/10 bg-[#111] px-5 py-4 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                                    required
-                                />
-                            </label>
-
-                            <label className="block space-y-3">
-                                <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
-                                    <Lock size={16} /> Senha
-                                </span>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full rounded-3xl border border-white/10 bg-[#111] px-5 py-4 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                                    required
-                                />
-                            </label>
-                            <label className="block space-y-3">
-                                <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
-                                    <Lock size={16} /> Confirmar Senha
-                                </span>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full rounded-3xl border border-white/10 bg-[#111] px-5 py-4 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                                    required
-                                />
-                            </label>
-
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="text-sm text-gray-400 hover:text-white transition">
-                                    <Link to="/login" className="font-bold text-amber-400 hover:text-amber-300">
-                                        Já tenho login
-                                    </Link>
+                            {error && (
+                                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                                    {error}
                                 </div>
+                            )}
+
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-2">
+                                <Link to="/login" className="font-bold text-amber-400 hover:text-amber-300">
+                                    Ja tenho login
+                                </Link>
                                 <button
                                     type="submit"
-                                    className="inline-flex items-center justify-center gap-3 rounded-full bg-amber-400 px-8 py-4 text-black font-black uppercase tracking-[0.2em] transition hover:bg-amber-300 hover:scale-[1.02] active:scale-95"
+                                    disabled={loading}
+                                    className="inline-flex items-center justify-center gap-3 rounded-full bg-amber-400 px-8 py-4 text-black font-black uppercase tracking-[0.2em] transition hover:bg-amber-300 hover:scale-[1.02] active:scale-95 disabled:opacity-60"
                                 >
-                                    Cadastrar
+                                    {loading ? 'Cadastrando...' : 'Cadastrar'}
                                     <ArrowRight size={18} />
                                 </button>
                             </div>
@@ -120,4 +101,24 @@ function Register() {
     )
 }
 
-export default Register;
+function Field({ icon, label, name, value, onChange, placeholder, type = 'text', maxLength }) {
+    return (
+        <label className="block space-y-3">
+            <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
+                {icon} {label}
+            </span>
+            <input
+                type={type}
+                name={name}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+                maxLength={maxLength}
+                className="w-full rounded-3xl border border-white/10 bg-[#111] px-5 py-4 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                required
+            />
+        </label>
+    )
+}
+
+export default Register
