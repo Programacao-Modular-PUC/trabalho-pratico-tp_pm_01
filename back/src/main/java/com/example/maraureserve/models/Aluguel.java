@@ -36,6 +36,8 @@ public class Aluguel {
     private LocalDateTime dataSaida;
     private Integer quantidadeHospedes;
     private Integer quantidadeDiarias;
+    private Boolean bercoSolicitado;
+    private BigDecimal valorDiaria;
     private BigDecimal valorFinal;
 
     public Long getId() {
@@ -100,6 +102,22 @@ public class Aluguel {
 
     public void setQuantidadeDiarias(Integer quantidadeDiarias) {
         this.quantidadeDiarias = quantidadeDiarias;
+    }
+
+    public Boolean getBercoSolicitado() {
+        return bercoSolicitado;
+    }
+
+    public void setBercoSolicitado(Boolean bercoSolicitado) {
+        this.bercoSolicitado = bercoSolicitado;
+    }
+
+    public BigDecimal getValorDiaria() {
+        return valorDiaria;
+    }
+
+    public void setValorDiaria(BigDecimal valorDiaria) {
+        this.valorDiaria = valorDiaria;
     }
 
     public BigDecimal getValorFinal() {
