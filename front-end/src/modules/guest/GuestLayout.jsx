@@ -16,6 +16,7 @@ import Reservations from './pages/Reservations'
 import Favorites from './pages/Favorites'
 import Profile from './pages/Profile'
 import Info from './pages/Support'
+import { clearSession, getLoggedCliente } from '../../services/auth'
 
 function GuestLayout() {
     const [activeTab, setActiveTab] = useState('explore')
@@ -55,6 +56,7 @@ function GuestLayout() {
     ]
 
     const ActiveComponent = navItems.find(item => item.id === activeTab)?.component || Explore
+    const cliente = getLoggedCliente()
 
     return (
         <div className="flex min-h-screen bg-black">
@@ -97,6 +99,7 @@ function GuestLayout() {
                 <div className="px-4 py-6 border-t border-slate-700/50 mt-auto">
                     <Link
                         to="/login"
+                        onClick={clearSession}
                         className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all font-semibold"
                     >
                         <LogOut className="w-5 h-5" />
@@ -116,7 +119,7 @@ function GuestLayout() {
                     <div className="flex-1" />
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold">H</span>
+                            <span className="text-white font-bold">{cliente?.nome?.[0] || 'H'}</span>
                         </div>
                     </div>
                 </div>

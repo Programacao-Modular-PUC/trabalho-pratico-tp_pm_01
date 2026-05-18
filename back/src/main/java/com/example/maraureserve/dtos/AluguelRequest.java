@@ -7,24 +7,26 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record AluguelRequest(
-        @NotNull(message = "A residência é obrigatória.")
+        @NotNull(message = "A residencia e obrigatoria.")
         Long residenciaId,
 
-        @NotNull(message = "O quarto é obrigatório.")
+        @NotNull(message = "O quarto e obrigatorio.")
         Long quartoId,
 
-        @NotNull(message = "O cliente é obrigatório.")
+        @NotNull(message = "O cliente e obrigatorio.")
         Long clienteId,
 
-        @NotNull(message = "A data de entrada é obrigatória.")
+        @NotNull(message = "A data de entrada e obrigatoria.")
         @Future(message = "A data de entrada deve estar no futuro.")
         LocalDateTime dataEntrada,
 
-        @NotNull(message = "A data de saída é obrigatória.")
-        @Future(message = "A data de saída deve estar no futuro.")
+        @NotNull(message = "A data de saida e obrigatoria.")
+        @Future(message = "A data de saida deve estar no futuro.")
         LocalDateTime dataSaida,
 
-        @NotNull(message = "A quantidade de hóspedes é obrigatória.")
-        @Min(value = 1, message = "A quantidade de hóspedes deve ser pelo menos 1.")
-        Integer quantidadeHospedes) {
+        @NotNull(message = "A quantidade de hospedes e obrigatoria.")
+        @Min(value = 1, message = "A quantidade de hospedes deve ser pelo menos 1.")
+        Integer quantidadeHospedes,
+
+        Boolean bercoSolicitado) {
 }

@@ -95,6 +95,10 @@ public class AluguelService {
             throw new BusinessException("A quantidade de hóspedes excede a capacidade máxima do quarto.");
         }
 
+        if (Boolean.TRUE.equals(request.bercoSolicitado()) && !Boolean.TRUE.equals(quarto.getPermiteBerco())) {
+            throw new BusinessException("O quarto informado não permite solicitação de berço.");
+        }
+
         boolean possuiConflito = !aluguelRepository.buscarConflitos(
                 quarto.getId(),
                 request.dataEntrada(),
@@ -106,7 +110,8 @@ public class AluguelService {
         }
 
         int quantidadeDiarias = calcularDiarias(request.dataEntrada(), request.dataSaida());
-        BigDecimal valorFinal = quarto.getValorBase().multiply(BigDecimal.valueOf(quantidadeDiarias));
+        BigDecimal valorDiaria = quarto.calcularValorDiaria(request.quantidadeHospedes(), request.bercoSolicitado());
+        BigDecimal valorFinal = valorDiaria.multiply(BigDecimal.valueOf(quantidadeDiarias));
 
         aluguel.setResidencia(residencia);
         aluguel.setQuarto(quarto);
@@ -115,6 +120,8 @@ public class AluguelService {
         aluguel.setDataSaida(request.dataSaida());
         aluguel.setQuantidadeHospedes(request.quantidadeHospedes());
         aluguel.setQuantidadeDiarias(quantidadeDiarias);
+        aluguel.setBercoSolicitado(Boolean.TRUE.equals(request.bercoSolicitado()));
+        aluguel.setValorDiaria(valorDiaria);
         aluguel.setValorFinal(valorFinal);
     }
 
