@@ -1,24 +1,48 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { api } from '../services/api'
+import { saveSession } from '../services/auth'
 
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault()
         setError('')
+        setLoading(true)
 
-        // Simulação de login
-        if (email === 'acessoguest@gmail.com' && password === 'testguest') {
-            navigate('/guest')
-        } else if (email === 'acessohost@gmail.com' && password === 'testhost') {
+        if (email === 'acessohost@gmail.com' && password === 'testhost') {
+            saveSession({ role: 'host', email })
             navigate('/host')
-        } else {
-            setError('Credenciais inválidas. Tente novamente.')
+            return
+        }
+
+        if (email === 'acessoguest@gmail.com' && password === 'testguest') {
+            saveSession({ role: 'guest', cliente: { id: 1, nome: 'Cliente Visitante', email } })
+            navigate('/guest')
+            return
+        }
+
+        try {
+            const clientes = await api.listClientes()
+            const cliente = clientes.find((item) => item.email?.toLowerCase() === email.toLowerCase())
+
+            if (!cliente) {
+                setError('Cliente nao encontrado. Cadastre-se antes de entrar.')
+                return
+            }
+
+            saveSession({ role: 'guest', cliente })
+            navigate('/guest')
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -36,10 +60,10 @@ function Login() {
                     <div className="space-y-8">
                         <div>
                             <h1 className="text-5xl lg:text-6xl font-black leading-tight tracking-tighter mb-6">
-                                Bem-vindo de volta ao <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">Maraú Reserve</span>
+                                Bem-vindo de volta ao <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">Marau Reserve</span>
                             </h1>
                             <p className="max-w-xl text-gray-400 text-lg leading-relaxed font-medium">
-                                Entre com sua conta para gerenciar reservas, explorar destinos e continuar sua jornada rumo ao paraíso de Maraú.
+                                Entre com seu email cadastrado para reservar quartos, acompanhar estadias e continuar sua viagem por Marau.
                             </p>
                         </div>
                     </div>
@@ -48,7 +72,7 @@ function Login() {
                         <div className="mb-8">
                             <img src="/icons/icon.png" alt="" className="w-16 h-16 mx-auto" />
                             <h2 className="mt-4 text-3xl font-black ">Acesse sua conta</h2>
-                            <p className="text-gray-400 mt-3">Digite seus dados abaixo para continuar.</p>
+                            <p className="text-gray-400 mt-3">Clientes entram pelo email cadastrado. Hosts usam a credencial de teste.</p>
                         </div>
 
                         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -74,24 +98,21 @@ function Login() {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
+                                    placeholder="Senha opcional para clientes"
                                     className="w-full rounded-3xl border border-white/10 bg-[#111] px-5 py-4 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                                    required
                                 />
                             </label>
 
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="text-sm text-gray-400 hover:text-white transition">
-                                    <Link to="/forgot-password" className="text-amber-400 font-bold hover:text-amber-300">
-                                        Esqueceu sua senha?
-                                    </Link>
-
-                                </div>
+                                <Link to="/register" className="text-sm text-amber-400 font-bold hover:text-amber-300">
+                                    Criar conta de cliente
+                                </Link>
                                 <button
                                     type="submit"
-                                    className="inline-flex items-center justify-center gap-3 rounded-full bg-amber-400 px-8 py-4 text-black font-black uppercase tracking-[0.2em] transition hover:bg-amber-300 hover:scale-[1.02] active:scale-95"
+                                    disabled={loading}
+                                    className="inline-flex items-center justify-center gap-3 rounded-full bg-amber-400 px-8 py-4 text-black font-black uppercase tracking-[0.2em] transition hover:bg-amber-300 hover:scale-[1.02] active:scale-95 disabled:opacity-60"
                                 >
-                                    Entrar
+                                    {loading ? 'Entrando...' : 'Entrar'}
                                     <ArrowRight size={18} />
                                 </button>
                             </div>
@@ -103,17 +124,9 @@ function Login() {
                             </div>
                         )}
 
-                        <div className="mt-10 rounded-3xl bg-white/5 border border-white/10 p-5 text-sm text-gray-400">
-                            Ainda não tem acesso?
-                            <Link to="/register" className="text-amber-400 font-bold hover:text-amber-300 ml-1">
-                                Crie sua conta agora.
-                            </Link>
-                        </div>
-
-                        {/* Credenciais de teste */}
                         <div className="mt-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 p-5 text-sm">
-                            <p className="text-amber-400 font-bold mb-2">Credenciais de Teste:</p>
-                            <p className="text-gray-300"><strong>Guest:</strong> acessoguest@gmail.com / testguest</p>
+                            <p className="text-amber-400 font-bold mb-2">Acessos de teste:</p>
+                            <p className="text-gray-300"><strong>Cliente demo:</strong> acessoguest@gmail.com / testguest</p>
                             <p className="text-gray-300"><strong>Host:</strong> acessohost@gmail.com / testhost</p>
                         </div>
                     </div>
@@ -123,4 +136,4 @@ function Login() {
     )
 }
 
-export default Login;
+export default Login
