@@ -22,6 +22,22 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    @ExceptionHandler(DataInvalidaException.class)
+    public ProblemDetail handleDataInvalida(DataInvalidaException exception) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        problemDetail.setTitle("Data invalida");
+        problemDetail.setType(URI.create("https://maraureserve.dev/errors/invalid-date"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(QuartoIndisponivelException.class)
+    public ProblemDetail handleQuartoIndisponivel(QuartoIndisponivelException exception) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+        problemDetail.setTitle("Quarto indisponivel");
+        problemDetail.setType(URI.create("https://maraureserve.dev/errors/unavailable-room"));
+        return problemDetail;
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ProblemDetail handleBusinessException(BusinessException exception) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
