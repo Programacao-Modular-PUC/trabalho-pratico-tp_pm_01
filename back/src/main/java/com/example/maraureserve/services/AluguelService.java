@@ -20,6 +20,8 @@ import com.example.maraureserve.repositories.AluguelRepository;
 import com.example.maraureserve.common.exception.BusinessException;
 import com.example.maraureserve.common.exception.CapacidadeExcedidaException;
 import com.example.maraureserve.common.exception.RecursoNaoPermitidoException;
+import com.example.maraureserve.common.exception.DataInvalidaException;
+import com.example.maraureserve.common.exception.QuartoIndisponivelException;
 import com.example.maraureserve.common.exception.ResourceNotFoundException;
 
 @Service
@@ -96,15 +98,7 @@ public class AluguelService {
         validarCapacidadeHospedes(request.quantidadeHospedes(), quarto);
         validarSolicitacaoBerco(request.bercoSolicitado(), quarto);
 
-        boolean possuiConflito = !aluguelRepository.buscarConflitos(
-                quarto.getId(),
-                request.dataEntrada(),
-                request.dataSaida(),
-                aluguelIdIgnorado).isEmpty();
-
-        if (possuiConflito) {
-            throw new BusinessException("O quarto já está reservado para o período informado.");
-        }
+        validarDisponibilidadeQuarto(quarto, request.dataEntrada(), request.dataSaida(), aluguelIdIgnorado);
 
         int quantidadeDiarias = calcularDiarias(request.dataEntrada(), request.dataSaida());
         BigDecimal valorDiaria = quarto.calcularValorDiaria(request.quantidadeHospedes(), request.bercoSolicitado());
@@ -123,8 +117,33 @@ public class AluguelService {
     }
 
     private void validarDatas(LocalDateTime dataEntrada, LocalDateTime dataSaida) {
+        if (dataEntrada == null || dataSaida == null) {
+            throw new DataInvalidaException("As datas de entrada e saida sao obrigatorias.");
+        }
+
+        LocalDateTime agora = LocalDateTime.now();
+        if (!dataEntrada.isAfter(agora) || !dataSaida.isAfter(agora)) {
+            throw new DataInvalidaException("As datas de entrada e saida devem estar no futuro.");
+        }
+
         if (!dataSaida.isAfter(dataEntrada)) {
-            throw new BusinessException("A data de saída deve ser posterior à data de entrada.");
+            throw new DataInvalidaException("A data de saida deve ser posterior a data de entrada.");
+        }
+    }
+
+    private void validarDisponibilidadeQuarto(
+            Quarto quarto,
+            LocalDateTime dataEntrada,
+            LocalDateTime dataSaida,
+            Long aluguelIdIgnorado) {
+        boolean possuiConflito = !aluguelRepository.buscarConflitos(
+                quarto.getId(),
+                dataEntrada,
+                dataSaida,
+                aluguelIdIgnorado).isEmpty();
+
+        if (possuiConflito) {
+            throw new QuartoIndisponivelException("O quarto ja esta reservado para o periodo informado.");
         }
     }
 
