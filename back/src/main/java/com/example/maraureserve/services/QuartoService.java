@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.maraureserve.common.exception.BusinessException;
+import com.example.maraureserve.common.exception.RecursoNaoPermitidoException;
 import com.example.maraureserve.common.exception.ResourceNotFoundException;
 import com.example.maraureserve.dtos.QuartoRequest;
 import com.example.maraureserve.dtos.QuartoResponse;
@@ -102,6 +103,9 @@ public class QuartoService {
             case INDIVIDUAL -> {
                 if (quarto.getQuantidadeCamasSolteiro() == null || quarto.getQuantidadeCamasSolteiro() < 1) {
                     throw new BusinessException("Quarto individual deve ter pelo menos uma cama de solteiro.");
+                }
+                if (Boolean.TRUE.equals(quarto.getPermiteBerco())) {
+                    throw new RecursoNaoPermitidoException("Quarto individual não permite berço.");
                 }
                 quarto.setPermiteBerco(false);
             }

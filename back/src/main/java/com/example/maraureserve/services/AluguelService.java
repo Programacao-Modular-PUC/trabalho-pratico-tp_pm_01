@@ -18,6 +18,8 @@ import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
 import com.example.maraureserve.repositories.AluguelRepository;
 import com.example.maraureserve.common.exception.BusinessException;
+import com.example.maraureserve.common.exception.CapacidadeExcedidaException;
+import com.example.maraureserve.common.exception.RecursoNaoPermitidoException;
 import com.example.maraureserve.common.exception.DataInvalidaException;
 import com.example.maraureserve.common.exception.QuartoIndisponivelException;
 import com.example.maraureserve.common.exception.ResourceNotFoundException;
@@ -93,13 +95,8 @@ public class AluguelService {
             throw new BusinessException("O quarto informado não pertence à residência selecionada.");
         }
 
-        if (request.quantidadeHospedes() > quarto.getCapacidadeMaxima()) {
-            throw new BusinessException("A quantidade de hóspedes excede a capacidade máxima do quarto.");
-        }
-
-        if (Boolean.TRUE.equals(request.bercoSolicitado()) && !Boolean.TRUE.equals(quarto.getPermiteBerco())) {
-            throw new BusinessException("O quarto informado não permite solicitação de berço.");
-        }
+        validarCapacidadeHospedes(request.quantidadeHospedes(), quarto);
+        validarSolicitacaoBerco(request.bercoSolicitado(), quarto);
 
         validarDisponibilidadeQuarto(quarto, request.dataEntrada(), request.dataSaida(), aluguelIdIgnorado);
 
@@ -147,6 +144,19 @@ public class AluguelService {
 
         if (possuiConflito) {
             throw new QuartoIndisponivelException("O quarto ja esta reservado para o periodo informado.");
+        }
+    }
+
+    private void validarCapacidadeHospedes(Integer quantidadeHospedes, Quarto quarto) {
+        if (quantidadeHospedes > quarto.getCapacidadeMaxima()) {
+            throw new CapacidadeExcedidaException(
+                    "A quantidade de hóspedes excede a capacidade máxima do quarto.");
+        }
+    }
+
+    private void validarSolicitacaoBerco(Boolean bercoSolicitado, Quarto quarto) {
+        if (Boolean.TRUE.equals(bercoSolicitado) && !Boolean.TRUE.equals(quarto.getPermiteBerco())) {
+            throw new RecursoNaoPermitidoException("O quarto informado não permite solicitação de berço.");
         }
     }
 
