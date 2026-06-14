@@ -30,57 +30,58 @@ Abaixo estão detalhados os cartões CRC que guiaram a modelagem orientada a obj
 | Classe: Residencia | |
 | :--- | :--- |
 | **Responsabilidades** | **Colaborações** |
-| 1. Conhecer seu endereço, número, bairro, cep, telefone e email | Quarto |
-| 2. Conhecer e gerenciar sua lista de quartos que podem ser alugados | Aluguel |
-| 3. Guardar e fornecer o histórico de aluguéis realizados na residência | |
+| 1. Conhecer seu endereço, número, bairro, cep, telefone e email | |
+| 2. Conhecer e gerenciar sua lista de quartos que podem ser alugados | Quarto |
+| 3. Guardar e fornecer o histórico de aluguéis realizados na residência | Aluguel |
 
 <br>
 
 | Classe: Quarto | |
 | :--- | :--- |
 | **Responsabilidades** | **Colaborações** |
-| 1. Conhecer seu tipo, sendo individual ou para casal | |
-| 2. Conhecer o seu valor base da diária, que é definido pelo proprietário | |
-| 3. Conhecer seus itens adicionais, indicando se possui ar condicionado e/ou banheira de hidromassagem | |
-| 4. Informar sua disponibilidade, garantindo que não seja alugado se já estiver ocupado no período solicitado | |
+| 1. Conhecer suas características, valor base, itens adicionais e a residência a qual pertence | Residencia |
+| 2. Calcular o valor da sua diária de acordo com as regras do tipo do quarto e quantidade de hóspedes | |
+| 3. Verificar e informar sua disponibilidade para garantir que não haja conflitos | Aluguel |
 
 ### 2. Caso de Uso: Cadastro e Autenticação de Clientes
 
 | Classe: Cliente | |
 | :--- | :--- |
 | **Responsabilidades** | **Colaborações** |
-| 1. Conhecer o seu nome e CPF | Aluguel |
+| 1. Conhecer o seu nome e CPF | |
 | 2. Conhecer o seu endereço | |
 | 3. Conhecer os seus dados de contato, como telefone e email | |
+| 4. Atualizar seus dados cadastrais (endereço e telefone) | |
 
 ### 3. Caso de Uso: Realização de Reservas e Aluguéis
 
 | Classe: Aluguel | |
 | :--- | :--- |
 | **Responsabilidades** | **Colaborações** |
-| 1. Conhecer a data e o horário de entrada e de saída | Residência, Quarto, Cliente, Pagamento |
-| 2. Conhecer a residência, o quarto e o cliente associados ao aluguel | |
-| 3. Calcular a quantidade de diárias, considerando que o início ocorre às 12h, saídas após as 12h adicionam nova diária e entradas após as 12h contam como diária completa | |
-| 4. Calcular o valor final da hospedagem somando o valor base do quarto aos valores dos itens adicionais | |
-| 5. Imprimir o formulário de aluguel contendo datas, horários, número de diárias e o total a pagar | |
+| 1. Conhecer a data e o horário de entrada, saída e quantidade de hóspedes | |
+| 2. Conhecer e associar-se à residência, ao quarto e ao cliente | Residencia, Quarto, Cliente |
+| 3. Calcular a quantidade de diárias, considerando regras de check-in e check-out | |
+| 4. Calcular o valor final da hospedagem solicitando o valor da diária para o quarto | Quarto |
+| 5. Gerar o recibo do aluguel | Recibo |
+| 6. Estar associado a um pagamento para quitação dos valores | Pagamento |
 
 <br>
 
 | Classe: Pagamento | |
 | :--- | :--- |
 | **Responsabilidades** | **Colaborações** |
-| 1. Associar-se a um aluguel para efetivar a cobrança | Aluguel |
-| 2. Conhecer o valor total gerado pelo aluguel e registrar a transação | |
+| 1. Conhecer seu status, data de registro e o valor total a ser cobrado | |
+| 2. Processar e confirmar a transação financeira vinculada a um aluguel | Aluguel |
 
 ### 4. Caso de Uso: Emissão de Recibos
 
 | Classe: Recibo | |
 | :--- | :--- |
 | **Responsabilidades** | **Colaborações** |
-| 1. Coletar e formatar a data e horário de entrada e saída | Aluguel, Pagamento |
+| 1. Coletar e formatar a data e horário de entrada e saída | Aluguel |
 | 2. Coletar e formatar o número total de diárias | |
 | 3. Obter o valor total a pagar gerado pelo aluguel | |
-| 4. Imprimir essas informações na tela seguindo o formato exigido pelo sistema | |
+| 4. Imprimir essas informações formatadas na tela | |
 
 ---
 
