@@ -114,12 +114,16 @@ Abaixo estão as representações das entidades principais que compõem a camada
 |                        Quarto (ABSTRACT)              |
 ---------------------------------------------------------
 | - id: Long                                            |
-| - valorBase: Double                                   |
+| - valorBase: BigDecimal                               |
 | - possuiArCondicionado: Boolean                       |
 | - possuiHidromassagem: Boolean                        |
+| - capacidadeMaxima: Integer                           |
+| - permiteBerco: Boolean                               |
 | - residencia: Residencia                              |
 ---------------------------------------------------------
-| + calcularValorDiaria(hospedes: Integer): Double      |
+| + calcularValorDiaria(hospedes: Integer,              |
+|                       bercoSolicitado: Boolean):      |
+|                       BigDecimal                      |
 | + verificarDisponibilidade(entrada: LocalDateTime,    |
 |                            saida: LocalDateTime):     |
 |                            Boolean                    |
@@ -131,9 +135,11 @@ Abaixo estão as representações das entidades principais que compõem a camada
 |                   QuartoIndividual                    |
 ---------------------------------------------------------
 | - quantidadeCamasSolteiro: Integer                    |
-| - valorAdicionalPorCama: Double                       |
+| - valorAdicionalPorCama: BigDecimal                   |
 ---------------------------------------------------------
-| + calcularValorDiaria(hospedes: Integer): Double      |
+| + calcularValorDiaria(hospedes: Integer,              |
+|                       bercoSolicitado: Boolean):      |
+|                       BigDecimal                      |
 | + calcularLimiteHospedes(): Integer                   |
 ---------------------------------------------------------
 
@@ -146,11 +152,12 @@ REGRAS:
 |                      QuartoDuplo                      |
 ---------------------------------------------------------
 | - tipoCama: TipoCamaCasal                             |
-| - possuiBercoSolicitado: Boolean                      |
-| - valorAdicionalConforto: Double                      |
-| - taxaBerco: Double                                   |
+| - valorAdicionalConforto: BigDecimal                  |
+| - taxaBerco: BigDecimal                               |
 ---------------------------------------------------------
-| + calcularValorDiaria(hospedes: Integer): Double      |
+| + calcularValorDiaria(hospedes: Integer,              |
+|                       bercoSolicitado: Boolean):      |
+|                       BigDecimal                      |
 | + possuiBerco(): Boolean                              |
 ---------------------------------------------------------
 
@@ -165,10 +172,12 @@ REGRAS:
 ---------------------------------------------------------
 | - configuracaoCamas: List<Cama>                       |
 | - ambientes: List<TipoAmbiente>                       |
-| - percentualPorHospede: Double                        |
+| - percentualPorHospede: BigDecimal                    |
 | - descontoGrupo: DescontoGrupo                        |
 ---------------------------------------------------------
-| + calcularValorDiaria(hospedes: Integer): Double      |
+| + calcularValorDiaria(hospedes: Integer,              |
+|                       bercoSolicitado: Boolean):      |
+|                       BigDecimal                      |
 | + calcularCapacidadeMaxima(): Integer                 |
 | + descreverConfiguracao(): String                     |
 ---------------------------------------------------------
@@ -248,11 +257,14 @@ REGRAS:
 | - dataEntrada: LocalDateTime                          |
 | - dataSaida: LocalDateTime                            |
 | - quantidadeHospedes: Integer                         |
-| - valorFinal: Double                                  |
+| - quantidadeDiarias: Integer                          |
+| - bercoSolicitado: Boolean                            |
+| - valorDiaria: BigDecimal                             |
+| - valorFinal: BigDecimal                              |
 | - pagamento: Pagamento                                |
 ---------------------------------------------------------
 | + calcularDiarias(): Integer                          |
-| + calcularValorFinal(): Double                        |
+| + calcularValorFinal(): BigDecimal                    |
 | + gerarRecibo(): Recibo                               |
 ---------------------------------------------------------
 
@@ -261,7 +273,7 @@ REGRAS:
 ---------------------------------------------------------
 | - id: Long                                            |
 | - aluguel: Aluguel                                    |
-| - valorTotal: Double                                  |
+| - valorTotal: BigDecimal                              |
 | - dataRegistro: LocalDateTime                         |
 | - status: String                                      |
 ---------------------------------------------------------
@@ -275,7 +287,7 @@ REGRAS:
 | - dataEntradaFormatada: String                        |
 | - dataSaidaFormatada: String                          |
 | - numeroDiarias: Integer                              |
-| - totalPagar: Double                                  |
+| - totalPagar: BigDecimal                              |
 ---------------------------------------------------------
 | + imprimirFormulario(): void                          |
 ---------------------------------------------------------
