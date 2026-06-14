@@ -88,7 +88,161 @@ Abaixo estão detalhados os cartões CRC que guiaram a modelagem orientada a obj
 ## 📊 Diagramas de Classe (UML - Domain Models)
 
 Abaixo estão as representações das entidades principais que compõem a camada `Model` do sistema.
-![Diagrama de UML - de classes ](imagens/Diagrama_de_UML_corrigido.png "Diagrama de UML.")
+```mermaid
+classDiagram
+		class Residencia {
+			+Long id
+			+String endereco
+			+String numero
+			+String bairro
+			+String cep
+			+String telefone
+			+String email
+			+List<Quarto> quartos
+			+List<Aluguel> historicoAlugueis
+			+adicionarQuarto(quarto: Quarto): void
+			+removerQuarto(quarto: Quarto): void
+			+listarQuartosDisponiveis(): List<Quarto>
+			+obterHistoricoAlugueis(): List<Aluguel>
+		}
+
+		class Quarto {
+			<<abstract>>
+			+Long id
+			+BigDecimal valorBase
+			+Boolean possuiArCondicionado
+			+Boolean possuiHidromassagem
+			+Integer capacidadeMaxima
+			+Boolean permiteBerco
+			+Residencia residencia
+			+calcularValorDiaria(hospedes: Integer, bercoSolicitado: Boolean): BigDecimal
+			+verificarDisponibilidade(entrada: LocalDateTime, saida: LocalDateTime): Boolean
+		}
+
+		class QuartoIndividual {
+			+Integer quantidadeCamasSolteiro
+			+BigDecimal valorAdicionalPorCama
+			+calcularValorDiaria(hospedes: Integer, bercoSolicitado: Boolean): BigDecimal
+			+calcularLimiteHospedes(): Integer
+		}
+
+		class QuartoDuplo {
+			+TipoCamaCasal tipoCama
+			+BigDecimal valorAdicionalConforto
+			+BigDecimal taxaBerco
+			+calcularValorDiaria(hospedes: Integer, bercoSolicitado: Boolean): BigDecimal
+			+possuiBerco(): Boolean
+		}
+
+		class QuartoFamilia {
+			+List<Cama> configuracaoCamas
+			+List<TipoAmbiente> ambientes
+			+BigDecimal percentualPorHospede
+			+DescontoGrupo descontoGrupo
+			+calcularValorDiaria(hospedes: Integer, bercoSolicitado: Boolean): BigDecimal
+			+calcularCapacidadeMaxima(): Integer
+			+descreverConfiguracao(): String
+		}
+
+		class Cliente {
+			+Long id
+			+String nome
+			+String cpf
+			+String endereco
+			+String telefone
+			+String email
+			+atualizarDados(novoEndereco: String, novoTelefone: String): void
+		}
+
+		class Aluguel {
+			+Long id
+			+Residencia residencia
+			+Quarto quarto
+			+Cliente cliente
+			+LocalDateTime dataEntrada
+			+LocalDateTime dataSaida
+			+Integer quantidadeHospedes
+			+Integer quantidadeDiarias
+			+Boolean bercoSolicitado
+			+BigDecimal valorDiaria
+			+BigDecimal valorFinal
+			+Pagamento pagamento
+			+calcularDiarias(): Integer
+			+calcularValorFinal(): BigDecimal
+			+gerarRecibo(): Recibo
+		}
+
+		class Pagamento {
+			+Long id
+			+Aluguel aluguel
+			+BigDecimal valorTotal
+			+LocalDateTime dataRegistro
+			+String status
+			+processarPagamento(): void
+			+confirmarPagamento(): void
+		}
+
+		class Recibo {
+			+String dataEntradaFormatada
+			+String dataSaidaFormatada
+			+Integer numeroDiarias
+			+BigDecimal totalPagar
+			+imprimirFormulario(): void
+		}
+
+		class TipoQuarto {
+			<<enumeration>>
+			INDIVIDUAL
+			DUPLO
+			FAMILIA
+		}
+
+		class TipoCamaCasal {
+			<<enumeration>>
+			CASAL_PADRAO
+			QUEEN
+			KING
+		}
+
+		class Cama {
+			<<enumeration>>
+			SOLTEIRO
+			CASAL
+			QUEEN
+			KING
+			BERCO
+		}
+
+		class TipoAmbiente {
+			<<enumeration>>
+			DORMITORIO
+			ESTUDO
+			HOME_OFFICE
+			SALA_ESTAR
+		}
+
+		class DescontoGrupo {
+			<<enumeration>>
+			A_PARTIR_3_HOSPEDES_5PORCENTO
+			A_PARTIR_5_HOSPEDES_10PORCENTO
+			A_PARTIR_8_HOSPEDES_15PORCENTO
+		}
+
+		Residencia "1" o-- "*" Quarto
+		Residencia "1" o-- "*" Aluguel
+		Aluguel --> Residencia
+		Aluguel --> Quarto
+		Aluguel --> Cliente
+		Aluguel --> Pagamento
+		Aluguel --> Recibo
+		Quarto <|-- QuartoIndividual
+		Quarto <|-- QuartoDuplo
+		Quarto <|-- QuartoFamilia
+		QuartoDuplo --> TipoCamaCasal
+		QuartoFamilia --> Cama
+		QuartoFamilia --> TipoAmbiente
+		QuartoFamilia --> DescontoGrupo
+```
 
 
 ---------------------------------------------------------
