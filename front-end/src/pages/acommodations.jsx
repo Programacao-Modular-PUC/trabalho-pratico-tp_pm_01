@@ -1,8 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import DatePicker, { registerLocale } from 'react-datepicker'
-import { ptBR } from 'date-fns/locale/pt-BR'
-import 'react-datepicker/dist/react-datepicker.css'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
     AlertCircle,
     Bath,
@@ -13,14 +10,12 @@ import {
     Filter,
     MapPin,
     Star,
-    Users,
-    X
+    Users
 } from 'lucide-react'
 import Searchbar from '../components/searchbar'
+import ReservationModal from '../components/ReservationModal'
 import { api } from '../services/api'
-import { buildAccommodation, getLoggedCliente } from '../services/auth'
-
-registerLocale('pt-BR', ptBR)
+import { buildAccommodation, ROOM_TYPE_OPTIONS } from '../services/auth'
 
 const fallbackAccommodations = [
     {
@@ -67,24 +62,10 @@ const fallbackAccommodations = [
     }
 ]
 
-function formatApiDateTime(date, hour) {
-    const d = new Date(date)
-    d.setHours(hour, 0, 0, 0)
-    const pad = (value) => String(value).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00:00`
-}
-
-function tomorrow() {
-    const date = new Date()
-    date.setDate(date.getDate() + 1)
-    date.setHours(0, 0, 0, 0)
-    return date
-}
-
 function Hospedagem() {
     const navigate = useNavigate()
     const location = useLocation()
-    const formRef = useRef(null)
+    const [searchParams, setSearchParams] = useSearchParams()
 
     const [accommodations, setAccommodations] = useState(fallbackAccommodations)
     const [loading, setLoading] = useState(true)
@@ -93,25 +74,17 @@ function Hospedagem() {
     const [priceFilter, setPriceFilter] = useState('all')
     const [locationFilter, setLocationFilter] = useState('all')
     const [bedsFilter, setBedsFilter] = useState('all')
+    const [tipoFilter, setTipoFilter] = useState('all')
     const [amenitiesFilter, setAmenitiesFilter] = useState('all')
     const [showFilters, setShowFilters] = useState(false)
     const [selectedAccommodation, setSelectedAccommodation] = useState(null)
-    const [reservationData, setReservationData] = useState({
-        checkIn: null,
-        checkOut: null,
-        guests: '1',
-        specialRequests: '',
-        cribRequested: false
-    })
     const [successMessage, setSuccessMessage] = useState('')
-    const [errors, setErrors] = useState({})
-    const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
         let mounted = true
         setLoading(true)
 
-        api.listQuartos()
+        api.listQuartos(tipoFilter !== 'all' ? tipoFilter : undefined)
             .then((rooms) => {
                 if (!mounted) return
                 const mapped = rooms?.length ? rooms.map(buildAccommodation) : fallbackAccommodations
@@ -130,17 +103,32 @@ function Hospedagem() {
         return () => {
             mounted = false
         }
-    }, [])
+    }, [tipoFilter])
 
-    useEffect(() => {
-        if (location.state?.selectedAccommodation) {
-            const incoming = location.state.selectedAccommodation
-            setSelectedAccommodation({ ...incoming, name: incoming.name || incoming.title })
-            setTimeout(() => {
-                formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            }, 300)
+    const openReservation = (item) => {
+        setSelectedAccommodation({ ...item, name: item.name || item.title })
+    }
+
+    useLayoutEffect(() => {
+        const fromState = location.state?.selectedAccommodation
+        const quartoParam = searchParams.get('quarto')
+
+        if (fromState) {
+            openReservation(fromState)
+            navigate(location.pathname + location.search, { replace: true, state: null })
+            return
         }
-    }, [location.state])
+
+        if (!quartoParam || loading) return
+
+        const found = accommodations.find(
+            (item) => String(item.quartoId || item.id) === String(quartoParam)
+        )
+        if (found) {
+            openReservation(found)
+            setSearchParams({}, { replace: true })
+        }
+    }, [location.state, searchParams, accommodations, loading, location.pathname, location.search, navigate, setSearchParams])
 
     const filteredLodgings = useMemo(() => {
         return accommodations.filter((item) => {
@@ -153,79 +141,15 @@ function Hospedagem() {
             const matchesLocation = locationFilter === 'all' || item.location === locationFilter
             const matchesBeds = bedsFilter === 'all' ||
                 (bedsFilter === '3' ? item.beds >= 3 : item.beds.toString() === bedsFilter)
+            const matchesTipo = tipoFilter === 'all' || item.tipo === tipoFilter
             const matchesAmenities = amenitiesFilter === 'all' || item.amenities.includes(amenitiesFilter)
 
-            return matchesSearch && matchesPrice && matchesLocation && matchesBeds && matchesAmenities
+            return matchesSearch && matchesPrice && matchesLocation && matchesBeds && matchesTipo && matchesAmenities
         })
-    }, [accommodations, amenitiesFilter, bedsFilter, locationFilter, priceFilter, searchTerm])
+    }, [accommodations, amenitiesFilter, bedsFilter, locationFilter, priceFilter, searchTerm, tipoFilter])
 
     const locations = [...new Set(accommodations.map((item) => item.location))]
     const allAmenities = [...new Set(accommodations.flatMap((item) => item.amenities))]
-
-    const validateReservation = () => {
-        const newErrors = {}
-        if (!reservationData.checkIn) newErrors.checkIn = 'Informe a data de entrada'
-        if (!reservationData.checkOut) newErrors.checkOut = 'Informe a data de saida'
-        if (reservationData.checkIn && reservationData.checkOut && reservationData.checkIn >= reservationData.checkOut) {
-            newErrors.checkOut = 'Data de saida deve ser apos a entrada'
-        }
-        if (Number(reservationData.guests) > Number(selectedAccommodation?.maxGuests || 1)) {
-            newErrors.guests = 'Quantidade de hospedes acima da capacidade'
-        }
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
-    }
-
-    const handleReservation = async () => {
-        if (!validateReservation()) return
-
-        const cliente = getLoggedCliente()
-        if (!cliente?.id) {
-            setSuccessMessage('Entre como cliente para confirmar sua reserva.')
-            setTimeout(() => navigate('/login'), 600)
-            return
-        }
-
-        if (!selectedAccommodation?.quartoId || !selectedAccommodation?.residenciaId) {
-            setErrors({ submit: 'Essa acomodacao ainda nao esta ligada ao backend.' })
-            return
-        }
-
-        setSubmitting(true)
-        setErrors({})
-        try {
-            const reserva = await api.createAluguel({
-                residenciaId: selectedAccommodation.residenciaId,
-                quartoId: selectedAccommodation.quartoId,
-                clienteId: cliente.id,
-                dataEntrada: formatApiDateTime(reservationData.checkIn, 14),
-                dataSaida: formatApiDateTime(reservationData.checkOut, 12),
-                quantidadeHospedes: Number(reservationData.guests),
-                bercoSolicitado: Boolean(reservationData.cribRequested && selectedAccommodation.allowsCrib)
-            })
-
-            const total = Number(reserva.valorFinal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-            setSuccessMessage(`Reserva confirmada. Total: R$ ${total}`)
-            setSelectedAccommodation(null)
-            setReservationData({
-                checkIn: null,
-                checkOut: null,
-                guests: '1',
-                specialRequests: '',
-                cribRequested: false
-            })
-        } catch (error) {
-            setErrors({ submit: error.message })
-        } finally {
-            setSubmitting(false)
-        }
-    }
-
-    const nights = selectedAccommodation && reservationData.checkIn && reservationData.checkOut
-        ? Math.ceil((reservationData.checkOut - reservationData.checkIn) / (1000 * 60 * 60 * 24))
-        : 0
-    const estimatedCribFee = selectedAccommodation?.allowsCrib && reservationData.cribRequested ? 35 : 0
-    const totalPrice = selectedAccommodation ? (selectedAccommodation.price + estimatedCribFee) * nights : 0
 
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-amber-400 selection:text-black antialiased">
@@ -307,7 +231,10 @@ function Hospedagem() {
                     </div>
 
                     {showFilters && (
-                        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10 grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10 grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <FilterSelect label="Tipo de Quarto" value={tipoFilter} onChange={setTipoFilter} options={
+                                ROOM_TYPE_OPTIONS.map(({ value, label }) => [value, label])
+                            } />
                             <FilterSelect label="Faixa de Preco" value={priceFilter} onChange={setPriceFilter} options={[
                                 ['all', 'Todos os precos'],
                                 ['budget', 'Ate R$ 500'],
@@ -337,10 +264,8 @@ function Hospedagem() {
                         {filteredLodgings.map((item) => (
                             <button
                                 key={item.id}
-                                onClick={() => {
-                                    setSelectedAccommodation({ ...item, name: item.name || item.title })
-                                    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
-                                }}
+                                type="button"
+                                onClick={() => openReservation(item)}
                                 className="group rounded-2xl overflow-hidden border border-white/10 bg-white/5 hover:border-amber-400 hover:bg-white/10 transition-all duration-300 text-left"
                             >
                                 <div className="relative h-56 overflow-hidden">
@@ -392,123 +317,14 @@ function Hospedagem() {
             )}
 
             {selectedAccommodation && (
-                <div ref={formRef} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0a] rounded-3xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 flex justify-between items-center p-6 border-b border-white/10 bg-[#0a0a0a]/95 backdrop-blur">
-                            <h2 className="text-2xl font-black text-amber-400">Reservar: {selectedAccommodation.name || selectedAccommodation.title}</h2>
-                            <button onClick={() => setSelectedAccommodation(null)} className="p-2 hover:bg-white/10 rounded-lg transition">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-6">
-                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <Info label="Localizacao" icon={MapPin}>{selectedAccommodation.location}</Info>
-                                    <Info label="Camas" icon={Bed}>{selectedAccommodation.beds}</Info>
-                                    <Info label="Banheiros" icon={Bath}>{selectedAccommodation.bathrooms}</Info>
-                                    <Info label="Max. Hospedes" icon={Users}>{selectedAccommodation.maxGuests}</Info>
-                                </div>
-                                <div className="mt-4 pt-4 border-t border-white/10">
-                                    <p className="text-gray-400 text-xs uppercase mb-2">Amenidades</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedAccommodation.amenities.map((amenity) => (
-                                            <span key={amenity} className="bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full text-xs font-medium">{amenity}</span>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <h3 className="text-xl font-bold">Dados da Reserva</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <DateField
-                                        label="Data de Entrada"
-                                        selected={reservationData.checkIn}
-                                        onChange={(date) => setReservationData({ ...reservationData, checkIn: date })}
-                                        minDate={tomorrow()}
-                                        error={errors.checkIn}
-                                    />
-                                    <DateField
-                                        label="Data de Saida"
-                                        selected={reservationData.checkOut}
-                                        onChange={(date) => setReservationData({ ...reservationData, checkOut: date })}
-                                        minDate={reservationData.checkIn || tomorrow()}
-                                        error={errors.checkOut}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">Numero de Hospedes</label>
-                                    <select
-                                        value={reservationData.guests}
-                                        onChange={(e) => setReservationData({ ...reservationData, guests: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors"
-                                    >
-                                        {Array.from({ length: selectedAccommodation.maxGuests }, (_, i) => i + 1).map((num) => (
-                                            <option key={num} value={num} style={{ background: '#1a1a1a', color: 'white' }}>
-                                                {num} {num === 1 ? 'hospede' : 'hospedes'}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.guests && <p className="text-red-400 text-sm flex items-center gap-2 mt-1"><AlertCircle size={14} />{errors.guests}</p>}
-                                </div>
-
-                                {selectedAccommodation.allowsCrib && (
-                                    <label className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
-                                        <span>
-                                            <span className="block font-bold text-white">Solicitar berco</span>
-                                            <span className="text-sm text-gray-400">O backend aplica a taxa extra na diaria.</span>
-                                        </span>
-                                        <input
-                                            type="checkbox"
-                                            checked={reservationData.cribRequested}
-                                            onChange={(e) => setReservationData({ ...reservationData, cribRequested: e.target.checked })}
-                                            className="h-5 w-5 accent-amber-400"
-                                        />
-                                    </label>
-                                )}
-
-                                <textarea
-                                    value={reservationData.specialRequests}
-                                    onChange={(e) => setReservationData({ ...reservationData, specialRequests: e.target.value })}
-                                    placeholder="Pedidos especiais, se houver"
-                                    rows="3"
-                                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
-                                />
-                            </div>
-
-                            {nights > 0 && (
-                                <div className="bg-gradient-to-r from-amber-400/20 to-amber-500/20 border border-amber-400/50 rounded-xl p-4">
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-300">Estimativa para {nights} {nights === 1 ? 'noite' : 'noites'}</span>
-                                            <span className="font-bold">R$ {totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                                        </div>
-                                        <p className="text-xs text-amber-100/80">O total final vem da regra de diaria do Spring Boot.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {errors.submit && (
-                                <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">{errors.submit}</div>
-                            )}
-
-                            <div className="flex gap-4 pt-4">
-                                <button onClick={() => setSelectedAccommodation(null)} className="flex-1 px-6 py-3 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors font-semibold">
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={handleReservation}
-                                    disabled={submitting}
-                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-bold rounded-lg transition-all duration-300 disabled:opacity-60 uppercase tracking-wider"
-                                >
-                                    {submitting ? 'Confirmando...' : 'Confirmar Reserva'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ReservationModal
+                    accommodation={selectedAccommodation}
+                    onClose={() => setSelectedAccommodation(null)}
+                    onSuccess={(reserva) => {
+                        const total = Number(reserva.valorFinal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                        setSuccessMessage(`Reserva confirmada. Total: R$ ${total}`)
+                    }}
+                />
             )}
         </div>
     )
@@ -538,36 +354,6 @@ function Badge({ icon: Icon, children }) {
         <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-xs">
             <Icon size={14} className="text-amber-400" />
             {children}
-        </div>
-    )
-}
-
-function Info({ label, icon: Icon, children }) {
-    return (
-        <div>
-            <p className="text-gray-400 text-xs uppercase mb-1">{label}</p>
-            <p className="font-bold flex items-center gap-2">
-                <Icon size={16} className="text-amber-400" />
-                {children}
-            </p>
-        </div>
-    )
-}
-
-function DateField({ label, selected, onChange, minDate, error }) {
-    return (
-        <div>
-            <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">{label}</label>
-            <DatePicker
-                selected={selected}
-                onChange={onChange}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Selecione"
-                minDate={minDate}
-                locale="pt-BR"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors"
-            />
-            {error && <p className="text-red-400 text-sm flex items-center gap-2 mt-1"><AlertCircle size={14} />{error}</p>}
         </div>
     )
 }

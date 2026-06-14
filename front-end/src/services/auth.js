@@ -21,6 +21,14 @@ export function getLoggedCliente() {
     return session?.role === 'guest' ? session.cliente : null
 }
 
+export const ROOM_TYPE_OPTIONS = [
+    { value: 'all', label: 'Todos os tipos' },
+    { value: 'INDIVIDUAL', label: 'Individual' },
+    { value: 'DUPLO', label: 'Duplo' },
+    { value: 'CASAL', label: 'Casal' },
+    { value: 'FAMILIA', label: 'Familia' }
+]
+
 export function buildAccommodation(room) {
     const residencia = [room.enderecoResidencia].filter(Boolean).join(' ')
     const beds = Number(room.quantidadeCamasSolteiro || 0)
@@ -32,6 +40,7 @@ export function buildAccommodation(room) {
         id: room.id,
         quartoId: room.id,
         residenciaId: room.residenciaId,
+        tipo: room.tipo,
         title: `${labelTipo(room.tipo)} ${room.codigo}`,
         name: `${labelTipo(room.tipo)} ${room.codigo}`,
         location: residencia || 'Marau, Bahia',

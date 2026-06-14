@@ -1,6 +1,7 @@
 package com.example.maraureserve.services;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.maraureserve.common.exception.BusinessException;
 import com.example.maraureserve.common.exception.DataInvalidaException;
 import com.example.maraureserve.common.exception.QuartoIndisponivelException;
 import com.example.maraureserve.dtos.AluguelRequest;
@@ -75,6 +77,21 @@ class AluguelServiceTest {
                 .thenReturn(List.of(new Aluguel()));
 
         assertThrows(QuartoIndisponivelException.class, () -> service.criar(request));
+    }
+
+    @Test
+    void cancelarDeveLancarBusinessExceptionQuandoReservaJaIniciou() {
+        AluguelService service = criarService();
+        Aluguel aluguel = new Aluguel();
+        aluguel.setId(10L);
+        aluguel.setDataEntrada(LocalDateTime.now().minusDays(1));
+        aluguel.setDataSaida(LocalDateTime.now().plusDays(1));
+
+        when(aluguelRepository.findById(10L)).thenReturn(java.util.Optional.of(aluguel));
+
+        assertThrows(BusinessException.class, () -> service.cancelar(10L));
+        verify(aluguelRepository).findById(10L);
+        verifyNoInteractions(residenciaService, quartoService, clienteService);
     }
 
     private AluguelService criarService() {

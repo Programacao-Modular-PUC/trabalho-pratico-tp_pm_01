@@ -33,7 +33,7 @@ function Home() {
     }, [])
 
     const openAccommodation = (item) => {
-        navigate('/hospedagem', { state: { selectedAccommodation: item } })
+        navigate(`/hospedagem?quarto=${item.quartoId || item.id}`, { state: { selectedAccommodation: item } })
     }
 
     return (

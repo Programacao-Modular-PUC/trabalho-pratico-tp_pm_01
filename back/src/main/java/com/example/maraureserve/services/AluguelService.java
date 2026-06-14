@@ -72,10 +72,31 @@ public class AluguelService {
         return AluguelResponse.fromEntity(aluguelRepository.save(aluguel));
     }
 
+    @Transactional(readOnly = true)
+    public List<AluguelResponse> listarPorCliente(Long clienteId) {
+        clienteService.buscarEntidade(clienteId);
+        return aluguelRepository.findByClienteIdOrderByDataEntradaDesc(clienteId).stream()
+                .map(AluguelResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public void cancelar(Long id) {
+        Aluguel aluguel = buscarEntidade(id);
+        validarCancelamento(aluguel);
+        aluguelRepository.delete(aluguel);
+    }
+
     @Transactional
     public void excluir(Long id) {
-        Aluguel aluguel = buscarEntidade(id);
-        aluguelRepository.delete(aluguel);
+        cancelar(id);
+    }
+
+    private void validarCancelamento(Aluguel aluguel) {
+        if (!aluguel.getDataEntrada().isAfter(LocalDateTime.now())) {
+            throw new BusinessException(
+                    "Não é possível cancelar um aluguel ou reserva já iniciado ou finalizado.");
+        }
     }
 
     @Transactional(readOnly = true)

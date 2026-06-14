@@ -1,26 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, Star, Filter, ChevronDown, Bed, Bath, Users, DollarSign, AlertCircle } from 'lucide-react'
+import { Search, MapPin, Star, Filter, ChevronDown, Bed, Bath, Users, DollarSign, AlertCircle, Check } from 'lucide-react'
 import { api } from '../../../services/api'
-import { buildAccommodation } from '../../../services/auth'
+import { buildAccommodation, ROOM_TYPE_OPTIONS } from '../../../services/auth'
+import ReservationModal from '../../../components/ReservationModal'
 
 function Dashboard() {
-    const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = useState('')
     const [priceFilter, setPriceFilter] = useState('all')
     const [locationFilter, setLocationFilter] = useState('all')
     const [bedsFilter, setBedsFilter] = useState('all')
+    const [tipoFilter, setTipoFilter] = useState('all')
     const [showFilters, setShowFilters] = useState(false)
     const [accommodations, setAccommodations] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [selectedAccommodation, setSelectedAccommodation] = useState(null)
+    const [successMessage, setSuccessMessage] = useState('')
 
     useEffect(() => {
         async function loadAccommodations() {
             setLoading(true)
             setError('')
             try {
-                const rooms = await api.listQuartos()
+                const rooms = await api.listQuartos(tipoFilter !== 'all' ? tipoFilter : undefined)
                 setAccommodations(rooms.map(buildAccommodation))
             } catch (err) {
                 setError(err.message)
@@ -30,7 +32,7 @@ function Dashboard() {
         }
 
         loadAccommodations()
-    }, [])
+    }, [tipoFilter])
 
     const filteredAccommodations = accommodations.filter(item => {
         const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,8 +46,9 @@ function Dashboard() {
         const matchesLocation = locationFilter === 'all' || item.location === locationFilter
         const matchesBeds = bedsFilter === 'all' ||
             (bedsFilter === '3' ? item.beds >= 3 : item.beds.toString() === bedsFilter)
+        const matchesTipo = tipoFilter === 'all' || item.tipo === tipoFilter
 
-        return matchesSearch && matchesPrice && matchesLocation && matchesBeds
+        return matchesSearch && matchesPrice && matchesLocation && matchesBeds && matchesTipo
     })
 
     const locations = useMemo(() => [...new Set(accommodations.map(item => item.location))], [accommodations])
@@ -70,6 +73,12 @@ function Dashboard() {
 
             {error && <Feedback text={error} />}
 
+            {successMessage && (
+                <div className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200 flex gap-3">
+                    <Check />{successMessage}
+                </div>
+            )}
+
             <div className="mb-6 rounded-2xl bg-slate-900/60 border border-slate-700/50 p-4">
                 <div className="flex gap-4 items-center flex-wrap">
                     <div className="flex-1 min-w-64 relative">
@@ -93,7 +102,12 @@ function Dashboard() {
                 </div>
 
                 {showFilters && (
-                    <div className="mt-4 pt-4 border-t border-slate-700/50 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="mt-4 pt-4 border-t border-slate-700/50 grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <FilterSelect label="Tipo de Quarto" value={tipoFilter} onChange={setTipoFilter}>
+                            {ROOM_TYPE_OPTIONS.map(({ value, label }) => (
+                                <option key={value} value={value}>{label}</option>
+                            ))}
+                        </FilterSelect>
                         <FilterSelect label="Faixa de Preco" value={priceFilter} onChange={setPriceFilter}>
                             <option value="all">Todos os precos</option>
                             <option value="budget">Ate R$ 500</option>
@@ -125,16 +139,30 @@ function Dashboard() {
             ) : filteredAccommodations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredAccommodations.map(item => (
-                        <AccommodationCard key={item.id} item={item} onClick={() => navigate('/hospedagem', { state: { selectedAccommodation: item } })} />
+                        <AccommodationCard
+                            key={item.id}
+                            item={item}
+                            onClick={() => setSelectedAccommodation({ ...item, name: item.name || item.title })}
+                        />
                     ))}
                 </div>
             ) : (
                 <EmptyState text="Nenhum quarto disponivel com os filtros selecionados." />
             )}
+
+            {selectedAccommodation && (
+                <ReservationModal
+                    accommodation={selectedAccommodation}
+                    onClose={() => setSelectedAccommodation(null)}
+                    onSuccess={(reserva) => {
+                        const total = Number(reserva.valorFinal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                        setSuccessMessage(`Reserva confirmada. Total: R$ ${total}`)
+                    }}
+                />
+            )}
         </div>
     )
 }
-
 function AccommodationCard({ item, onClick }) {
     return (
         <div onClick={onClick} className="group rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/60 hover:border-amber-400/50 hover:bg-slate-800/60 transition-all duration-300 cursor-pointer">
@@ -161,7 +189,7 @@ function AccommodationCard({ item, onClick }) {
                         <span className="text-xl font-bold text-white">R$ {item.price.toLocaleString('pt-BR')}</span>
                         <span className="text-slate-400 text-sm">/noite</span>
                     </div>
-                    <button className="px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg text-sm hover:bg-amber-400 transition">Ver</button>
+                    <button type="button" className="px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg text-sm hover:bg-amber-400 transition">Reservar</button>
                 </div>
             </div>
         </div>

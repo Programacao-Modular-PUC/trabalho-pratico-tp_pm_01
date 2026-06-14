@@ -57,7 +57,13 @@ public class AluguelController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        aluguelService.excluir(id);
+        aluguelService.cancelar(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelar(@PathVariable Long id) {
+        aluguelService.cancelar(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.example.maraureserve.dtos.AluguelResponse;
 import com.example.maraureserve.dtos.ClienteRequest;
 import com.example.maraureserve.dtos.ClienteResponse;
+import com.example.maraureserve.services.AluguelService;
 import com.example.maraureserve.services.ClienteService;
 
 import jakarta.validation.Valid;
@@ -25,9 +27,11 @@ import jakarta.validation.Valid;
 public class ClienteController {
 
     private final ClienteService clienteService;
+    private final AluguelService aluguelService;
 
-    public ClienteController(ClienteService clienteService) {
+    public ClienteController(ClienteService clienteService, AluguelService aluguelService) {
         this.clienteService = clienteService;
+        this.aluguelService = aluguelService;
     }
 
     @GetMapping
@@ -38,6 +42,11 @@ public class ClienteController {
     @GetMapping("/{id}")
     public ClienteResponse buscarPorId(@PathVariable Long id) {
         return clienteService.buscarPorId(id);
+    }
+
+    @GetMapping("/{id}/alugueis")
+    public List<AluguelResponse> listarHistoricoAlugueis(@PathVariable Long id) {
+        return aluguelService.listarPorCliente(id);
     }
 
     @PostMapping

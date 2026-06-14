@@ -9,10 +9,12 @@ import {
     LogOut,
     Menu,
     X,
-    ChevronDown
+    ChevronDown,
+    History
 } from 'lucide-react'
 import Explore from './pages/Dashboard'
 import Reservations from './pages/Reservations'
+import HistoryPage from './pages/History'
 import Favorites from './pages/Favorites'
 import Profile from './pages/Profile'
 import Info from './pages/Support'
@@ -36,6 +38,12 @@ function GuestLayout() {
             component: Reservations
         },
         {
+            id: 'historico',
+            label: 'Historico',
+            icon: History,
+            component: HistoryPage
+        },
+        {
             id: 'favoritos',
             label: 'Favoritos',
             icon: Heart,
@@ -57,6 +65,14 @@ function GuestLayout() {
 
     const ActiveComponent = navItems.find(item => item.id === activeTab)?.component || Explore
     const cliente = getLoggedCliente()
+
+    const renderActiveComponent = () => {
+        if (activeTab === 'perfil') {
+            return <Profile onNavigate={setActiveTab} />
+        }
+        const Component = ActiveComponent
+        return <Component />
+    }
 
     return (
         <div className="flex min-h-screen bg-black">
@@ -125,7 +141,7 @@ function GuestLayout() {
                 </div>
 
                 <div className="flex-1 overflow-auto bg-[#070707] min-h-screen">
-                    <ActiveComponent />
+                    {renderActiveComponent()}
                 </div>
             </div>
 

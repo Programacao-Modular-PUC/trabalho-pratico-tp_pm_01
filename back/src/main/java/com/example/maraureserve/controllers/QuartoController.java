@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.maraureserve.models.TipoQuarto;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.example.maraureserve.dtos.QuartoRequest;
@@ -31,8 +34,8 @@ public class QuartoController {
     }
 
     @GetMapping
-    public List<QuartoResponse> listar() {
-        return quartoService.listar();
+    public List<QuartoResponse> listar(@RequestParam(required = false) TipoQuarto tipo) {
+        return quartoService.listar(tipo);
     }
 
     @GetMapping("/{id}")

@@ -1,7 +1,7 @@
-import { Mail, MapPin, Phone, Shield, User } from 'lucide-react'
+import { Mail, MapPin, Phone, Shield, User, History } from 'lucide-react'
 import { getLoggedCliente } from '../../../services/auth'
 
-function Profile() {
+function Profile({ onNavigate }) {
     const cliente = getLoggedCliente()
 
     return (
@@ -34,8 +34,17 @@ function Profile() {
                 <aside className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/20">
                     <h2 className="text-xl font-bold text-white">Acesso do cliente</h2>
                     <p className="mt-4 text-slate-400">
-                        O login usa o e-mail cadastrado no endpoint de clientes. Como o backend da sprint nao possui senha, o front valida a sessao pelo cadastro existente.
+                        Consulte seu historico completo de hospedagens ou gerencie reservas ativas pelo menu lateral.
                     </p>
+                    {onNavigate && (
+                        <button
+                            onClick={() => onNavigate('historico')}
+                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-3xl bg-amber-500 px-4 py-3 text-sm font-semibold text-black transition hover:bg-amber-400"
+                        >
+                            <History className="h-4 w-4" />
+                            Ver historico de hospedagens
+                        </button>
+                    )}
                     <div className="mt-6 rounded-3xl bg-slate-900/80 p-4">
                         <p className="text-sm uppercase tracking-[0.25em] text-slate-500">Identificador</p>
                         <p className="mt-2 text-white">Cliente #{cliente?.id || '-'}</p>

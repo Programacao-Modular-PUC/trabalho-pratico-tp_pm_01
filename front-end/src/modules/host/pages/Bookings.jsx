@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AlertCircle, Baby, Calendar, DollarSign, FileText, MapPin, RefreshCw, Users, X } from 'lucide-react'
+import CancelReservationButton from '../../../components/CancelReservationButton'
 import { api } from '../../../services/api'
 
 function Bookings() {
@@ -7,6 +8,7 @@ function Bookings() {
     const [selectedReceipt, setSelectedReceipt] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [successMessage, setSuccessMessage] = useState('')
 
     useEffect(() => {
         loadBookings()
@@ -31,6 +33,12 @@ function Bookings() {
 
     const formatDate = (date) => new Date(date).toLocaleString('pt-BR')
 
+    const handleCancelled = (booking) => {
+        setBookings((current) => current.filter((item) => item.id !== booking.id))
+        setSuccessMessage(`Reserva de ${booking.nomeCliente} (quarto ${booking.codigoQuarto}) cancelada.`)
+        setError('')
+    }
+
     return (
         <div className="min-h-screen bg-[#0f172a] text-slate-200 p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
@@ -52,6 +60,12 @@ function Bookings() {
                     <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex gap-3 text-red-300 mb-6">
                         <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <span>{error}</span>
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-emerald-200 mb-6">
+                        {successMessage}
                     </div>
                 )}
 
@@ -85,13 +99,20 @@ function Bookings() {
                                         <Info label="Quarto" value={booking.codigoQuarto} />
                                         <Info label="Periodo" value={`${new Date(booking.dataEntrada).toLocaleDateString('pt-BR')} - ${new Date(booking.dataSaida).toLocaleDateString('pt-BR')}`} />
                                         <Info label="Diaria" value={formatCurrency(booking.valorDiaria)} highlight />
-                                        <div className="flex items-center">
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setSelectedReceipt(booking)}
                                                 className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition"
                                             >
                                                 <FileText size={14} /> Recibo
                                             </button>
+                                            <CancelReservationButton
+                                                reservation={booking}
+                                                onCancelled={handleCancelled}
+                                                onError={setError}
+                                                label="Cancelar"
+                                                className="rounded-lg text-xs"
+                                            />
                                         </div>
                                     </div>
                                 </div>

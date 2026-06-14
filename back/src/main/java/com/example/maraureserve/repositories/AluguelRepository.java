@@ -11,6 +11,8 @@ import com.example.maraureserve.models.Aluguel;
 
 public interface AluguelRepository extends JpaRepository<Aluguel, Long> {
 
+    List<Aluguel> findByClienteIdOrderByDataEntradaDesc(Long clienteId);
+
     @Query("""
             select a
             from Aluguel a

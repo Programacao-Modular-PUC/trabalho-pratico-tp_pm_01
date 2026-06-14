@@ -12,6 +12,7 @@ import com.example.maraureserve.dtos.QuartoRequest;
 import com.example.maraureserve.dtos.QuartoResponse;
 import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
+import com.example.maraureserve.models.TipoQuarto;
 import com.example.maraureserve.repositories.QuartoRepository;
 
 @Service
@@ -26,8 +27,9 @@ public class QuartoService {
     }
 
     @Transactional(readOnly = true)
-    public List<QuartoResponse> listar() {
-        return quartoRepository.findAll().stream()
+    public List<QuartoResponse> listar(TipoQuarto tipo) {
+        var quartos = tipo == null ? quartoRepository.findAll() : quartoRepository.findByTipo(tipo);
+        return quartos.stream()
                 .map(QuartoResponse::fromEntity)
                 .toList();
     }

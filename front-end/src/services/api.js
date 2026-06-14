@@ -17,7 +17,9 @@ async function request(path, options = {}) {
         } catch {
             message = await response.text() || message
         }
-        throw new Error(message)
+        const error = new Error(message)
+        error.status = response.status
+        throw error
     }
 
     if (response.status === 204) {
@@ -41,7 +43,10 @@ export const api = {
     }),
     deleteResidencia: (id) => request(`/residencias/${id}`, { method: 'DELETE' }),
 
-    listQuartos: () => request('/quartos'),
+    listQuartos: (tipo) => {
+        const query = tipo ? `?tipo=${encodeURIComponent(tipo)}` : ''
+        return request(`/quartos${query}`)
+    },
     createQuarto: (data) => request('/quartos', {
         method: 'POST',
         body: JSON.stringify(data)
@@ -49,8 +54,19 @@ export const api = {
     deleteQuarto: (id) => request(`/quartos/${id}`, { method: 'DELETE' }),
 
     listAlugueis: () => request('/alugueis'),
+    listHistoricoCliente: async (clienteId) => {
+        try {
+            return await request(`/clientes/${clienteId}/alugueis`)
+        } catch (error) {
+            if (error.status !== 404) throw error
+            const items = await request('/alugueis')
+            return items.filter((item) => Number(item.clienteId) === Number(clienteId))
+        }
+    },
     createAluguel: (data) => request('/alugueis', {
         method: 'POST',
         body: JSON.stringify(data)
-    })
+    }),
+    cancelAluguel: (id) => request(`/alugueis/${id}/cancelar`, { method: 'POST' }),
+    deleteAluguel: (id) => request(`/alugueis/${id}/cancelar`, { method: 'POST' })
 }

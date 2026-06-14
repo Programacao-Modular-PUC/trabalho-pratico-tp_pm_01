@@ -1,63 +1,55 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Calendar, CheckCircle, MapPin, Users, XCircle } from 'lucide-react'
+import CancelReservationButton from '../../../components/CancelReservationButton'
 import { api } from '../../../services/api'
 import { getLoggedCliente } from '../../../services/auth'
-
-function formatDate(value) {
-    if (!value) return '-'
-    return new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-function formatCurrency(value) {
-    return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
-
-function statusForReservation(item) {
-    // Prioriza o status enviado pelo back-end. Se não vier, faz o fallback baseado na data
-    if (item.status) return item.status;
-
-    const now = new Date()
-    const start = new Date(item.dataEntrada)
-    const end = new Date(item.dataSaida)
-
-    if (end < now) return 'Finalizada'
-    if (start <= now && end >= now) return 'Em andamento'
-    return 'Confirmada'
-}
+import { canCancelReservation, formatCurrency, formatDate, statusForReservation } from '../../../utils/reservationUtils'
 
 function Reservations() {
     const cliente = getLoggedCliente()
     const [reservations, setReservations] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [successMessage, setSuccessMessage] = useState('')
 
-    useEffect(() => {
+    const loadReservations = useCallback(async () => {
         if (!cliente?.id) {
             setLoading(false)
             return
         }
 
-        let mounted = true
-        api.listAlugueis()
-            .then((items) => {
-                if (!mounted) return
-                setReservations((items || []).filter((item) => Number(item.clienteId) === Number(cliente.id)))
-                setError('')
-            })
-            .catch((err) => {
-                if (mounted) setError(err.message)
-            })
-            .finally(() => {
-                if (mounted) setLoading(false)
-            })
-
-        return () => {
-            mounted = false
+        setLoading(true)
+        setError('')
+        try {
+            const items = await api.listHistoricoCliente(cliente.id)
+            setReservations(items || [])
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
         }
     }, [cliente?.id])
 
+    useEffect(() => {
+        loadReservations()
+    }, [loadReservations])
+
+    const handleCancelled = (item) => {
+        setReservations((current) => current.filter((reservation) => reservation.id !== item.id))
+        setSuccessMessage(`Reserva do quarto ${item.codigoQuarto} cancelada com sucesso.`)
+        setError('')
+    }
+
     const totals = useMemo(() => {
         return reservations.reduce((acc, item) => acc + Number(item.valorFinal || 0), 0)
+    }, [reservations])
+
+    const upcomingCount = useMemo(() => {
+        return reservations.filter((item) => statusForReservation(item) === 'Confirmada').length
+    }, [reservations])
+
+    const cancellableCount = useMemo(() => {
+        return reservations.filter(canCancelReservation).length
     }, [reservations])
 
     return (
@@ -65,13 +57,23 @@ function Reservations() {
             <div className="mb-8 rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/20">
                 <h1 className="text-3xl font-black text-white">Minhas reservas</h1>
                 <p className="mt-3 max-w-2xl text-slate-400">
-                    {cliente?.nome ? `${cliente.nome}, acompanhe suas reservas confirmadas.` : 'Entre como cliente para acompanhar suas reservas.'}
+                    {cliente?.nome
+                        ? `${cliente.nome}, acompanhe e cancele reservas futuras antes do check-in.`
+                        : 'Entre como cliente para acompanhar suas reservas.'}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3 text-sm">
                     <span className="rounded-full bg-slate-900 px-4 py-2 text-slate-300">{reservations.length} reserva(s)</span>
+                    <span className="rounded-full bg-emerald-500/15 px-4 py-2 text-emerald-300">{upcomingCount} proxima(s)</span>
+                    <span className="rounded-full bg-red-500/15 px-4 py-2 text-red-300">{cancellableCount} cancelavel(is)</span>
                     <span className="rounded-full bg-amber-500/15 px-4 py-2 text-amber-300">Total: {formatCurrency(totals)}</span>
                 </div>
             </div>
+
+            {successMessage && (
+                <div className="mb-6 rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-200">
+                    {successMessage}
+                </div>
+            )}
 
             {loading && (
                 <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 text-slate-300">Carregando reservas...</div>
@@ -98,12 +100,19 @@ function Reservations() {
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
                                     <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{status}</p>
-                                    <h2 className="mt-3 text-2xl font-semibold text-white">Quarto {item.codigoQuarto || 'Indisponível'}</h2>
+                                    <h2 className="mt-3 text-2xl font-semibold text-white">Quarto {item.codigoQuarto || 'Indisponivel'}</h2>
                                     <p className="text-slate-400">{item.enderecoResidencia || 'Marau, Bahia'}</p>
                                 </div>
-                                <span className={`rounded-full px-4 py-2 text-sm font-semibold ${status === 'Confirmada' ? 'bg-emerald-500/15 text-emerald-300' : status === 'Em andamento' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-700/70 text-slate-300'}`}>
-                                    {status}
-                                </span>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className={`rounded-full px-4 py-2 text-sm font-semibold ${status === 'Confirmada' ? 'bg-emerald-500/15 text-emerald-300' : status === 'Em andamento' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-700/70 text-slate-300'}`}>
+                                        {status}
+                                    </span>
+                                    <CancelReservationButton
+                                        reservation={item}
+                                        onCancelled={handleCancelled}
+                                        onError={setError}
+                                    />
+                                </div>
                             </div>
 
                             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -122,17 +131,18 @@ function Reservations() {
                             </div>
 
                             <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Diárias: {item.quantidadeDiarias || item.totalDiarias || '-'}</span>
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Valor Base/Noite: {formatCurrency(item.valorDiaria)}</span>
-                                {item.taxaLimpeza > 0 && (
-                                    <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Limpeza: {formatCurrency(item.taxaLimpeza)}</span>
-                                )}
+                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Diarias: {item.quantidadeDiarias || '-'}</span>
+                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Valor/noite: {formatCurrency(item.valorDiaria)}</span>
                                 {item.bercoSolicitado && (
-                                    <span className="rounded-3xl bg-amber-500/15 px-5 py-3 text-amber-300">
-                                        Berço solicitado {item.taxaBerco ? `(+${formatCurrency(item.taxaBerco)})` : ''}
-                                    </span>
+                                    <span className="rounded-3xl bg-amber-500/15 px-5 py-3 text-amber-300">Berço solicitado</span>
                                 )}
                             </div>
+
+                            {!canCancelReservation(item) && status !== 'Finalizada' && (
+                                <p className="mt-4 text-sm text-slate-500">
+                                    Reservas em andamento nao podem ser canceladas pelo sistema.
+                                </p>
+                            )}
                         </div>
                     )
                 })}
@@ -154,4 +164,3 @@ function InfoCard({ icon: Icon, label, children }) {
 }
 
 export default Reservations
-
