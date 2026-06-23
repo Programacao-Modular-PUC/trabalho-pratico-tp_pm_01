@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.maraureserve.config.ConfiguracaoReservas;
 import com.example.maraureserve.dtos.AluguelRequest;
 import com.example.maraureserve.dtos.AluguelResponse;
 import com.example.maraureserve.models.Aluguel;
@@ -27,8 +28,7 @@ import com.example.maraureserve.common.exception.ResourceNotFoundException;
 @Service
 public class AluguelService {
 
-    private static final LocalTime HORA_PADRAO_CHECKIN = LocalTime.NOON;
-    private static final LocalTime HORA_PADRAO_CHECKOUT = LocalTime.NOON;
+    private final ConfiguracaoReservas configuracao = ConfiguracaoReservas.getInstance();
 
     private final AluguelRepository aluguelRepository;
     private final ResidenciaService residenciaService;
@@ -182,8 +182,8 @@ public class AluguelService {
     }
 
     private int calcularDiarias(LocalDateTime dataEntrada, LocalDateTime dataSaida) {
-        LocalDate dataBaseEntrada = ajustarDataParaDiaria(dataEntrada, HORA_PADRAO_CHECKIN);
-        LocalDate dataBaseSaida = ajustarDataParaDiaria(dataSaida, HORA_PADRAO_CHECKOUT);
+        LocalDate dataBaseEntrada = ajustarDataParaDiaria(dataEntrada, configuracao.getHoraCheckin());
+        LocalDate dataBaseSaida = ajustarDataParaDiaria(dataSaida, configuracao.getHoraCheckout());
 
         long diarias = Duration.between(
                 dataBaseEntrada.atStartOfDay(),

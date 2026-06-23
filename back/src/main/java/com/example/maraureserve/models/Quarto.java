@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.maraureserve.config.ConfiguracaoReservas;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -297,15 +298,16 @@ public class Quarto {
     }
 
     private BigDecimal percentualDescontoGrupo(Integer quantidadeHospedes) {
+        ConfiguracaoReservas config = ConfiguracaoReservas.getInstance();
         int hospedes = inteiroOuZero(quantidadeHospedes);
-        if (hospedes >= 8) {
-            return new BigDecimal("0.15");
+        if (hospedes >= config.getLimiteDescontoGrande()) {
+            return config.getPercentualDescontoGrande();
         }
-        if (hospedes >= 5) {
-            return new BigDecimal("0.10");
+        if (hospedes >= config.getLimiteDescontoMedio()) {
+            return config.getPercentualDescontoMedio();
         }
-        if (hospedes >= 3) {
-            return new BigDecimal("0.05");
+        if (hospedes >= config.getLimiteDescontoPequeno()) {
+            return config.getPercentualDescontoPequeno();
         }
         return BigDecimal.ZERO;
     }
