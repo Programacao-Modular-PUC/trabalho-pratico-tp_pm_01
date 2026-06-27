@@ -50,7 +50,6 @@ class AluguelServiceTest {
         residencia.setId(1L);
 
         quarto = mock(Quarto.class);
-        when(quarto.getId()).thenReturn(1L);
         when(quarto.getResidencia()).thenReturn(residencia);
         
         cliente = new Cliente();
@@ -98,12 +97,12 @@ class AluguelServiceTest {
 
     @Test
     void testDisponibilidade_QuartoIndisponivel_LancaExcecao() {
+        when(quarto.getId()).thenReturn(1L);
         when(quarto.getCapacidadeMaxima()).thenReturn(4);
-        when(quarto.getPermiteBerco()).thenReturn(true);
         when(residenciaService.buscarEntidade(1L)).thenReturn(residencia);
         when(quartoService.buscarEntidade(1L)).thenReturn(quarto);
         when(clienteService.buscarEntidade(1L)).thenReturn(cliente);
-        
+
         when(aluguelRepository.buscarConflitos(eq(1L), any(LocalDateTime.class), any(LocalDateTime.class), isNull()))
                 .thenReturn(List.of(new Aluguel()));
 
