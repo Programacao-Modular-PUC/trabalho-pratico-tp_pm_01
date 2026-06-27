@@ -55,16 +55,16 @@ function Dashboard() {
 
     return (
         <div className="p-6">
-            <div className="mb-8 rounded-3xl bg-slate-950/80 border border-slate-700/50 p-8 shadow-xl shadow-slate-950/10">
+            <div className="mb-8 rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <p className="text-sm uppercase tracking-[0.3em] text-amber-400">Explorar</p>
-                        <h1 className="mt-3 text-3xl font-black text-white">Encontre sua proxima estadia</h1>
-                        <p className="mt-2 max-w-2xl text-slate-400">Quartos carregados diretamente da API.</p>
+                        <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">Explorar</p>
+                        <h1 className="mt-3 text-3xl font-black text-slate-900">Encontre sua proxima estadia</h1>
+                        <p className="mt-2 max-w-2xl text-slate-600">Quartos carregados diretamente da API.</p>
                     </div>
                     <button
                         onClick={() => document.getElementById('results-count')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="rounded-3xl bg-amber-500 px-6 py-3 text-sm font-semibold text-black transition hover:bg-amber-400"
+                        className="rounded-3xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-amber-600"
                     >
                         Ver ofertas
                     </button>
@@ -74,12 +74,12 @@ function Dashboard() {
             {error && <Feedback text={error} />}
 
             {successMessage && (
-                <div className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200 flex gap-3">
+                <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 flex gap-3">
                     <Check />{successMessage}
                 </div>
             )}
 
-            <div className="mb-6 rounded-2xl bg-slate-900/60 border border-slate-700/50 p-4">
+            <div className="mb-6 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                 <div className="flex gap-4 items-center flex-wrap">
                     <div className="flex-1 min-w-64 relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -88,12 +88,12 @@ function Dashboard() {
                             placeholder="Buscar por quarto ou localizacao..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-colors"
+                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-colors"
                         />
                     </div>
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="px-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white hover:bg-slate-700/50 transition-colors flex items-center gap-2"
+                        className="px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
                     >
                         <Filter size={20} />
                         Filtros
@@ -102,7 +102,7 @@ function Dashboard() {
                 </div>
 
                 {showFilters && (
-                    <div className="mt-4 pt-4 border-t border-slate-700/50 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4">
                         <FilterSelect label="Tipo de Quarto" value={tipoFilter} onChange={setTipoFilter}>
                             {ROOM_TYPE_OPTIONS.map(({ value, label }) => (
                                 <option key={value} value={value}>{label}</option>
@@ -129,8 +129,8 @@ function Dashboard() {
             </div>
 
             <div id="results-count" className="mb-4">
-                <p className="text-slate-400">
-                    <span className="text-amber-400 font-bold">{filteredAccommodations.length}</span> acomodacoes encontradas
+                <p className="text-slate-600">
+                    <span className="text-amber-600 font-bold">{filteredAccommodations.length}</span> acomodacoes encontradas
                 </p>
             </div>
 
@@ -165,31 +165,31 @@ function Dashboard() {
 }
 function AccommodationCard({ item, onClick }) {
     return (
-        <div onClick={onClick} className="group rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/60 hover:border-amber-400/50 hover:bg-slate-800/60 transition-all duration-300 cursor-pointer">
+        <div onClick={onClick} className="group rounded-2xl overflow-hidden border border-slate-200 bg-white hover:border-amber-400 hover:shadow-lg transition-all duration-300 cursor-pointer shadow-sm">
             <div className="relative h-48 overflow-hidden">
                 <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
-                <div className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-1 flex items-center gap-1">
-                    <Star size={14} className="text-amber-400 fill-amber-400" />
-                    <span className="font-bold text-sm text-white">{item.rating}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1 flex items-center gap-1">
+                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                    <span className="font-bold text-sm text-slate-900">{item.rating}</span>
                 </div>
             </div>
             <div className="p-5">
-                <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">{item.title}</h3>
-                <div className="flex items-center gap-2 text-slate-400 text-sm mt-2"><MapPin size={14} />{item.location}</div>
-                <p className="text-slate-400 text-sm mt-3 line-clamp-2">{item.description}</p>
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-600 transition-colors">{item.title}</h3>
+                <div className="flex items-center gap-2 text-slate-600 text-sm mt-2"><MapPin size={14} />{item.location}</div>
+                <p className="text-slate-600 text-sm mt-3 line-clamp-2">{item.description}</p>
                 <div className="flex flex-wrap gap-2 mt-4">
                     <Spec icon={<Bed size={12} />} value={item.beds} />
                     <Spec icon={<Bath size={12} />} value={item.bathrooms} />
                     <Spec icon={<Users size={12} />} value={item.maxGuests} />
                 </div>
-                <div className="mt-4 pt-4 border-t border-slate-700/50 flex justify-between items-center">
+                <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
                     <div className="flex items-center gap-1">
-                        <DollarSign size={18} className="text-amber-400" />
-                        <span className="text-xl font-bold text-white">R$ {item.price.toLocaleString('pt-BR')}</span>
-                        <span className="text-slate-400 text-sm">/noite</span>
+                        <DollarSign size={18} className="text-amber-600" />
+                        <span className="text-xl font-bold text-slate-900">R$ {item.price.toLocaleString('pt-BR')}</span>
+                        <span className="text-slate-500 text-sm">/noite</span>
                     </div>
-                    <button type="button" className="px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg text-sm hover:bg-amber-400 transition">Reservar</button>
+                    <button type="button" className="px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg text-sm hover:bg-amber-600 transition">Reservar</button>
                 </div>
             </div>
         </div>
@@ -197,14 +197,14 @@ function AccommodationCard({ item, onClick }) {
 }
 
 function Spec({ icon, value }) {
-    return <div className="flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300"><span className="text-amber-400">{icon}</span>{value}</div>
+    return <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded text-xs text-slate-700"><span className="text-amber-600">{icon}</span>{value}</div>
 }
 
 function FilterSelect({ label, value, onChange, children }) {
     return (
         <div>
-            <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">{label}</label>
-            <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">{label}</label>
+            <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-colors">
                 {children}
             </select>
         </div>
@@ -212,11 +212,11 @@ function FilterSelect({ label, value, onChange, children }) {
 }
 
 function Feedback({ text }) {
-    return <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-300 flex gap-3"><AlertCircle />{text}</div>
+    return <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700 flex gap-3"><AlertCircle />{text}</div>
 }
 
 function EmptyState({ text }) {
-    return <div className="text-center py-16 rounded-3xl bg-slate-900/40 border border-slate-700/50 text-slate-400">{text}</div>
+    return <div className="text-center py-16 rounded-3xl bg-white border border-slate-200 text-slate-600 shadow-sm">{text}</div>
 }
 
 export default Dashboard

@@ -6,22 +6,22 @@ function Profile({ onNavigate }) {
 
     return (
         <div className="p-6">
-            <div className="mb-8 rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/20">
+            <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <p className="text-sm uppercase tracking-[0.3em] text-amber-400">Perfil do hospede</p>
-                        <h1 className="mt-3 text-3xl font-black text-white">{cliente?.nome || 'Cliente'}</h1>
-                        <p className="mt-2 text-slate-400">Dados carregados do cadastro em /clientes.</p>
+                        <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">Perfil do hospede</p>
+                        <h1 className="mt-3 text-3xl font-black text-slate-900">{cliente?.nome || 'Cliente'}</h1>
+                        <p className="mt-2 text-slate-600">Dados carregados do cadastro em /clientes.</p>
                     </div>
-                    <div className="rounded-3xl bg-slate-900/90 border border-slate-700/50 p-4 text-center">
-                        <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Status</p>
-                        <strong className="mt-2 block text-xl text-white">{cliente?.id ? 'Logado' : 'Sem sessao'}</strong>
+                    <div className="rounded-3xl bg-slate-50 border border-slate-200 p-4 text-center">
+                        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Status</p>
+                        <strong className="mt-2 block text-xl text-slate-900">{cliente?.id ? 'Logado' : 'Sem sessao'}</strong>
                     </div>
                 </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[0.8fr_0.6fr]">
-                <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/15">
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                     <div className="space-y-6">
                         <ReadOnlyField icon={User} label="Nome completo" value={cliente?.nome || '-'} />
                         <ReadOnlyField icon={Mail} label="E-mail" value={cliente?.email || '-'} />
@@ -31,23 +31,23 @@ function Profile({ onNavigate }) {
                     </div>
                 </div>
 
-                <aside className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/20">
-                    <h2 className="text-xl font-bold text-white">Acesso do cliente</h2>
-                    <p className="mt-4 text-slate-400">
+                <aside className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-900">Acesso do cliente</h2>
+                    <p className="mt-4 text-slate-600">
                         Consulte seu historico completo de hospedagens ou gerencie reservas ativas pelo menu lateral.
                     </p>
                     {onNavigate && (
                         <button
                             onClick={() => onNavigate('historico')}
-                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-3xl bg-amber-500 px-4 py-3 text-sm font-semibold text-black transition hover:bg-amber-400"
+                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-3xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600"
                         >
                             <History className="h-4 w-4" />
                             Ver historico de hospedagens
                         </button>
                     )}
-                    <div className="mt-6 rounded-3xl bg-slate-900/80 p-4">
-                        <p className="text-sm uppercase tracking-[0.25em] text-slate-500">Identificador</p>
-                        <p className="mt-2 text-white">Cliente #{cliente?.id || '-'}</p>
+                    <div className="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Identificador</p>
+                        <p className="mt-2 font-medium text-slate-900">Cliente #{cliente?.id || '-'}</p>
                     </div>
                 </aside>
             </div>
@@ -58,10 +58,10 @@ function Profile({ onNavigate }) {
 function ReadOnlyField({ icon: Icon, label, value }) {
     return (
         <div>
-            <label className="block text-sm font-semibold text-slate-200">{label}</label>
-            <div className="mt-3 flex items-center gap-3 rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3">
-                <Icon className="h-5 w-5 text-amber-400" />
-                <span className="w-full text-white">{value}</span>
+            <label className="block text-sm font-semibold text-slate-700">{label}</label>
+            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <Icon className="h-5 w-5 text-amber-600" />
+                <span className="w-full text-slate-900">{value}</span>
             </div>
         </div>
     )

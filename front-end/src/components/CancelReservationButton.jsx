@@ -33,7 +33,7 @@ function CancelReservationButton({
             type="button"
             onClick={handleClick}
             disabled={loading}
-            className={`flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-60 ${className}`}
+            className={`flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-60 ${className}`}
         >
             <Trash2 className="h-4 w-4" />
             {loading ? 'Cancelando...' : label}

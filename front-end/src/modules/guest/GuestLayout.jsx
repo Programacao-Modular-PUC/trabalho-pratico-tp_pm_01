@@ -75,15 +75,15 @@ function GuestLayout() {
     }
 
     return (
-        <div className="flex min-h-screen bg-black">
-            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-black border-r border-slate-700/50 transition-transform duration-300 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
-                <div className="h-20 border-b border-slate-700/50 flex items-center px-6 gap-3">
+        <div className="flex min-h-screen bg-slate-100">
+            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 shadow-sm transition-transform duration-300 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
+                <div className="h-20 border-b border-slate-200 flex items-center px-6 gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
                         <img src="/icons/icon.png" alt="MaraúReserve" />
                     </div>
                     <div>
-                        <p className="font-black text-white text-lg">MaraúReserve</p>
-                        <p className="text-xs text-amber-400 font-bold">Guest</p>
+                        <p className="font-black text-slate-900 text-lg">MaraúReserve</p>
+                        <p className="text-xs text-amber-600 font-bold">Guest</p>
                     </div>
                 </div>
 
@@ -100,8 +100,8 @@ function GuestLayout() {
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
                                     isActive
-                                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-lg shadow-amber-500/30'
-                                        : 'text-gray-400 hover:text-white hover:bg-slate-800/50'
+                                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md shadow-amber-500/20'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                                 }`}
                             >
                                 <Icon className="w-5 h-5" />
@@ -112,11 +112,11 @@ function GuestLayout() {
                     })}
                 </nav>
 
-                <div className="px-4 py-6 border-t border-slate-700/50 mt-auto">
+                <div className="px-4 py-6 border-t border-slate-200 mt-auto">
                     <Link
                         to="/login"
                         onClick={clearSession}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all font-semibold"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all font-semibold"
                     >
                         <LogOut className="w-5 h-5" />
                         Sair
@@ -125,10 +125,10 @@ function GuestLayout() {
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="h-20 border-b border-slate-700/50 bg-gradient-to-r from-slate-900 to-black flex items-center px-6 z-40">
+                <div className="h-20 border-b border-slate-200 bg-white flex items-center px-6 z-40 shadow-sm">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="lg:hidden text-gray-400 hover:text-white transition"
+                        className="lg:hidden text-slate-500 hover:text-slate-900 transition"
                     >
                         {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
@@ -140,13 +140,13 @@ function GuestLayout() {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-auto bg-[#070707] min-h-screen">
+                <div className="flex-1 overflow-auto bg-slate-50 min-h-screen">
                     {renderActiveComponent()}
                 </div>
             </div>
 
             {sidebarOpen && (
-                <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+                <div className="fixed inset-0 bg-slate-900/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
             )}
         </div>
     )

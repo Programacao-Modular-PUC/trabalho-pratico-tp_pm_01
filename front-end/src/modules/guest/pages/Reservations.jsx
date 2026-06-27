@@ -54,39 +54,39 @@ function Reservations() {
 
     return (
         <div className="p-6">
-            <div className="mb-8 rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/20">
-                <h1 className="text-3xl font-black text-white">Minhas reservas</h1>
-                <p className="mt-3 max-w-2xl text-slate-400">
+            <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                <h1 className="text-3xl font-black text-slate-900">Minhas reservas</h1>
+                <p className="mt-3 max-w-2xl text-slate-600">
                     {cliente?.nome
                         ? `${cliente.nome}, acompanhe e cancele reservas futuras antes do check-in.`
                         : 'Entre como cliente para acompanhar suas reservas.'}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                    <span className="rounded-full bg-slate-900 px-4 py-2 text-slate-300">{reservations.length} reserva(s)</span>
-                    <span className="rounded-full bg-emerald-500/15 px-4 py-2 text-emerald-300">{upcomingCount} proxima(s)</span>
-                    <span className="rounded-full bg-red-500/15 px-4 py-2 text-red-300">{cancellableCount} cancelavel(is)</span>
-                    <span className="rounded-full bg-amber-500/15 px-4 py-2 text-amber-300">Total: {formatCurrency(totals)}</span>
+                    <span className="rounded-full bg-slate-100 px-4 py-2 text-slate-700">{reservations.length} reserva(s)</span>
+                    <span className="rounded-full bg-emerald-100 px-4 py-2 text-emerald-800">{upcomingCount} proxima(s)</span>
+                    <span className="rounded-full bg-red-100 px-4 py-2 text-red-700">{cancellableCount} cancelavel(is)</span>
+                    <span className="rounded-full bg-amber-100 px-4 py-2 text-amber-800">Total: {formatCurrency(totals)}</span>
                 </div>
             </div>
 
             {successMessage && (
-                <div className="mb-6 rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-200">
+                <div className="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
                     {successMessage}
                 </div>
             )}
 
             {loading && (
-                <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 text-slate-300">Carregando reservas...</div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 text-slate-600 shadow-sm">Carregando reservas...</div>
             )}
 
             {error && (
-                <div className="rounded-3xl border border-red-500/40 bg-red-500/10 p-8 text-red-200">{error}</div>
+                <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-red-700">{error}</div>
             )}
 
             {!loading && !error && reservations.length === 0 && (
-                <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/10">
-                    <div className="flex items-center gap-3 text-slate-400">
-                        <XCircle className="h-5 w-5 text-red-400" />
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <div className="flex items-center gap-3 text-slate-600">
+                        <XCircle className="h-5 w-5 text-red-500" />
                         <p>Nenhuma reserva encontrada para este cliente.</p>
                     </div>
                 </div>
@@ -96,15 +96,15 @@ function Reservations() {
                 {reservations.map((item) => {
                     const status = statusForReservation(item)
                     return (
-                        <div key={item.id} className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-6 shadow-xl shadow-slate-950/15">
+                        <div key={item.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
-                                    <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{status}</p>
-                                    <h2 className="mt-3 text-2xl font-semibold text-white">Quarto {item.codigoQuarto || 'Indisponivel'}</h2>
-                                    <p className="text-slate-400">{item.enderecoResidencia || 'Marau, Bahia'}</p>
+                                    <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{status}</p>
+                                    <h2 className="mt-3 text-2xl font-semibold text-slate-900">Quarto {item.codigoQuarto || 'Indisponivel'}</h2>
+                                    <p className="text-slate-600">{item.enderecoResidencia || 'Marau, Bahia'}</p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <span className={`rounded-full px-4 py-2 text-sm font-semibold ${status === 'Confirmada' ? 'bg-emerald-500/15 text-emerald-300' : status === 'Em andamento' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-700/70 text-slate-300'}`}>
+                                    <span className={`rounded-full px-4 py-2 text-sm font-semibold ${status === 'Confirmada' ? 'bg-emerald-100 text-emerald-800' : status === 'Em andamento' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}`}>
                                         {status}
                                     </span>
                                     <CancelReservationButton
@@ -130,11 +130,11 @@ function Reservations() {
                                 </InfoCard>
                             </div>
 
-                            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Diarias: {item.quantidadeDiarias || '-'}</span>
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">Valor/noite: {formatCurrency(item.valorDiaria)}</span>
+                            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-700">
+                                <span className="rounded-3xl bg-slate-100 px-5 py-3">Diarias: {item.quantidadeDiarias || '-'}</span>
+                                <span className="rounded-3xl bg-slate-100 px-5 py-3">Valor/noite: {formatCurrency(item.valorDiaria)}</span>
                                 {item.bercoSolicitado && (
-                                    <span className="rounded-3xl bg-amber-500/15 px-5 py-3 text-amber-300">Berço solicitado</span>
+                                    <span className="rounded-3xl bg-amber-100 px-5 py-3 text-amber-800">Berço solicitado</span>
                                 )}
                             </div>
 
@@ -153,12 +153,12 @@ function Reservations() {
 
 function InfoCard({ icon: Icon, label, children }) {
     return (
-        <div className="rounded-3xl bg-slate-900/80 p-4">
-            <div className="flex items-center gap-2 text-amber-400">
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+            <div className="flex items-center gap-2 text-amber-600">
                 <Icon className="h-4 w-4" />
-                <span className="text-sm uppercase tracking-[0.25em]">{label}</span>
+                <span className="text-sm font-semibold uppercase tracking-wide text-slate-500">{label}</span>
             </div>
-            <p className="mt-3 text-white">{children}</p>
+            <p className="mt-3 font-medium text-slate-900">{children}</p>
         </div>
     )
 }

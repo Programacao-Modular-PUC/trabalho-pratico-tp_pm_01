@@ -62,12 +62,12 @@ function History() {
 
     return (
         <div className="p-6">
-            <div className="mb-8 rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/20">
+            <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                 <div className="flex items-center gap-3">
-                    <HistoryIcon className="h-8 w-8 text-amber-400" />
+                    <HistoryIcon className="h-8 w-8 text-amber-600" />
                     <div>
-                        <h1 className="text-3xl font-black text-white">Historico de hospedagens</h1>
-                        <p className="mt-2 max-w-2xl text-slate-400">
+                        <h1 className="text-3xl font-black text-slate-900">Historico de hospedagens</h1>
+                        <p className="mt-2 max-w-2xl text-slate-600">
                             {cliente?.nome
                                 ? `${cliente.nome}, veja todas as suas estadias registradas no sistema.`
                                 : 'Entre como cliente para consultar seu historico.'}
@@ -75,9 +75,9 @@ function History() {
                     </div>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                    <span className="rounded-full bg-slate-900 px-4 py-2 text-slate-300">{stats.total} hospedagem(ns)</span>
-                    <span className="rounded-full bg-slate-900 px-4 py-2 text-slate-300">{stats.past} finalizada(s)</span>
-                    <span className="rounded-full bg-amber-500/15 px-4 py-2 text-amber-300">
+                    <span className="rounded-full bg-slate-100 px-4 py-2 text-slate-700">{stats.total} hospedagem(ns)</span>
+                    <span className="rounded-full bg-slate-100 px-4 py-2 text-slate-700">{stats.past} finalizada(s)</span>
+                    <span className="rounded-full bg-amber-100 px-4 py-2 text-amber-800">
                         Total em estadias: {formatCurrency(stats.totalSpent)}
                     </span>
                 </div>
@@ -90,8 +90,8 @@ function History() {
                         onClick={() => setFilter(id)}
                         className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                             filter === id
-                                ? 'bg-amber-500 text-black'
-                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800'
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                         }`}
                     >
                         {label}
@@ -100,22 +100,23 @@ function History() {
             </div>
 
             {loading && (
-                <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 text-slate-300">Carregando historico...</div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 text-slate-600 shadow-sm">Carregando historico...</div>
             )}
 
             {error && (
-                <div className="rounded-3xl border border-red-500/40 bg-red-500/10 p-8 text-red-200">{error}</div>
+                <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-red-700">{error}</div>
             )}
 
             {successMessage && (
-                <div className="mb-6 rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-200">
+                <div className="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
                     {successMessage}
                 </div>
             )}
 
-            {!loading && !error && filteredHistory.length === 0 && (                <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-8 shadow-xl shadow-slate-950/10">
-                    <div className="flex items-center gap-3 text-slate-400">
-                        <XCircle className="h-5 w-5 text-red-400" />
+            {!loading && !error && filteredHistory.length === 0 && (
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <div className="flex items-center gap-3 text-slate-600">
+                        <XCircle className="h-5 w-5 text-red-500" />
                         <p>Nenhuma hospedagem encontrada para o filtro selecionado.</p>
                     </div>
                 </div>
@@ -125,20 +126,20 @@ function History() {
                 {filteredHistory.map((item) => {
                     const status = statusForReservation(item)
                     return (
-                        <div key={item.id} className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-6 shadow-xl shadow-slate-950/15">
+                        <div key={item.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
-                                    <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{status}</p>
-                                    <h2 className="mt-3 text-2xl font-semibold text-white">Quarto {item.codigoQuarto || 'Indisponivel'}</h2>
-                                    <p className="text-slate-400">{item.enderecoResidencia || 'Marau, Bahia'}</p>
+                                    <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{status}</p>
+                                    <h2 className="mt-3 text-2xl font-semibold text-slate-900">Quarto {item.codigoQuarto || 'Indisponivel'}</h2>
+                                    <p className="text-slate-600">{item.enderecoResidencia || 'Marau, Bahia'}</p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3">
                                     <span className={`rounded-full px-4 py-2 text-sm font-semibold ${
                                         status === 'Confirmada'
-                                            ? 'bg-emerald-500/15 text-emerald-300'
+                                            ? 'bg-emerald-100 text-emerald-800'
                                             : status === 'Em andamento'
-                                                ? 'bg-amber-500/15 text-amber-300'
-                                                : 'bg-slate-700/70 text-slate-300'
+                                                ? 'bg-amber-100 text-amber-800'
+                                                : 'bg-slate-100 text-slate-700'
                                     }`}>
                                         {status}
                                     </span>
@@ -152,7 +153,8 @@ function History() {
                                         onError={setError}
                                         label="Cancelar hospedagem"
                                     />
-                                </div>                            </div>
+                                </div>
+                            </div>
 
                             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <InfoCard icon={Calendar} label="Periodo">
@@ -169,16 +171,16 @@ function History() {
                                 </InfoCard>
                             </div>
 
-                            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3 flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-amber-400" />
+                            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-700">
+                                <span className="rounded-3xl bg-slate-100 px-5 py-3 flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-amber-600" />
                                     {item.quantidadeDiarias || '-'} diaria(s)
                                 </span>
-                                <span className="rounded-3xl bg-slate-900/80 px-5 py-3">
+                                <span className="rounded-3xl bg-slate-100 px-5 py-3">
                                     Valor/noite: {formatCurrency(item.valorDiaria)}
                                 </span>
                                 {item.bercoSolicitado && (
-                                    <span className="rounded-3xl bg-amber-500/15 px-5 py-3 text-amber-300">Berço solicitado</span>
+                                    <span className="rounded-3xl bg-amber-100 px-5 py-3 text-amber-800">Berço solicitado</span>
                                 )}
                             </div>
                         </div>
@@ -191,12 +193,12 @@ function History() {
 
 function InfoCard({ icon: Icon, label, children }) {
     return (
-        <div className="rounded-3xl bg-slate-900/80 p-4">
-            <div className="flex items-center gap-2 text-amber-400">
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+            <div className="flex items-center gap-2 text-amber-600">
                 <Icon className="h-4 w-4" />
-                <span className="text-sm uppercase tracking-[0.25em]">{label}</span>
+                <span className="text-sm font-semibold uppercase tracking-wide text-slate-500">{label}</span>
             </div>
-            <p className="mt-3 text-white">{children}</p>
+            <p className="mt-3 font-medium text-slate-900">{children}</p>
         </div>
     )
 }
