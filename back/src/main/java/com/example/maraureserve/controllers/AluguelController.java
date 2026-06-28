@@ -66,4 +66,19 @@ public class AluguelController {
         aluguelService.cancelar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/check-in")
+    public AluguelResponse realizarCheckIn(@PathVariable Long id) {
+        return aluguelService.realizarCheckIn(id);
+    }
+
+    @PostMapping("/{id}/check-out")
+    public AluguelResponse realizarCheckOut(@PathVariable Long id) {
+        return aluguelService.realizarCheckOut(id);
+    }
+
+    @PostMapping("/{id}/confirmar-pagamento")
+    public AluguelResponse confirmarPagamento(@PathVariable Long id) {
+        return aluguelService.confirmarPagamento(id);
+    }
 }

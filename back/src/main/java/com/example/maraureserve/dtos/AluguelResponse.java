@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.example.maraureserve.models.Aluguel;
+import com.example.maraureserve.models.StatusAluguel;
 
 public record AluguelResponse(
         Long id,
@@ -19,7 +20,9 @@ public record AluguelResponse(
         Integer quantidadeDiarias,
         Boolean bercoSolicitado,
         BigDecimal valorDiaria,
-        BigDecimal valorFinal) {
+        BigDecimal valorFinal,
+        StatusAluguel status,
+        Boolean pagamentoConfirmado) {
 
     public static AluguelResponse fromEntity(Aluguel aluguel) {
         return new AluguelResponse(
@@ -36,6 +39,8 @@ public record AluguelResponse(
                 aluguel.getQuantidadeDiarias(),
                 aluguel.getBercoSolicitado(),
                 aluguel.getValorDiaria(),
-                aluguel.getValorFinal());
+                aluguel.getValorFinal(),
+                aluguel.getStatus(),
+                aluguel.getPagamentoConfirmado());
     }
 }

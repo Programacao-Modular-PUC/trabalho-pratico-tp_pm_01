@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,6 +41,11 @@ public class Aluguel {
     private Boolean bercoSolicitado;
     private BigDecimal valorDiaria;
     private BigDecimal valorFinal;
+
+    @Enumerated(EnumType.STRING)
+    private StatusAluguel status = StatusAluguel.RESERVADA;
+
+    private Boolean pagamentoConfirmado = false;
 
     public Long getId() {
         return id;
@@ -126,5 +133,21 @@ public class Aluguel {
 
     public void setValorFinal(BigDecimal valorFinal) {
         this.valorFinal = valorFinal;
+    }
+
+    public StatusAluguel getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusAluguel status) {
+        this.status = status;
+    }
+
+    public Boolean getPagamentoConfirmado() {
+        return pagamentoConfirmado;
+    }
+
+    public void setPagamentoConfirmado(Boolean pagamentoConfirmado) {
+        this.pagamentoConfirmado = pagamentoConfirmado;
     }
 }

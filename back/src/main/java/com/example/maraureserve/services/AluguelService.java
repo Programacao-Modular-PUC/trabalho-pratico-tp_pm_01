@@ -17,7 +17,11 @@ import com.example.maraureserve.models.Aluguel;
 import com.example.maraureserve.models.Cliente;
 import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
+import com.example.maraureserve.models.StatusAluguel;
 import com.example.maraureserve.repositories.AluguelRepository;
+import com.example.maraureserve.notifications.GerenciadorNotificacoes;
+import com.example.maraureserve.notifications.evento.NotificacaoEvento;
+import com.example.maraureserve.notifications.evento.TipoEventoNotificacao;
 import com.example.maraureserve.common.exception.BusinessException;
 import com.example.maraureserve.common.exception.CapacidadeExcedidaException;
 import com.example.maraureserve.common.exception.RecursoNaoPermitidoException;
@@ -29,6 +33,7 @@ import com.example.maraureserve.common.exception.ResourceNotFoundException;
 public class AluguelService {
 
     private final ConfiguracaoReservas configuracao = ConfiguracaoReservas.getInstance();
+    private final GerenciadorNotificacoes gerenciadorNotificacoes = GerenciadorNotificacoes.getInstance();
 
     private final AluguelRepository aluguelRepository;
     private final ResidenciaService residenciaService;
@@ -62,7 +67,11 @@ public class AluguelService {
     public AluguelResponse criar(AluguelRequest request) {
         Aluguel aluguel = new Aluguel();
         preencherCampos(aluguel, request, null);
-        return AluguelResponse.fromEntity(aluguelRepository.save(aluguel));
+        aluguel.setStatus(StatusAluguel.RESERVADA);
+        aluguel.setPagamentoConfirmado(false);
+        Aluguel salvo = aluguelRepository.save(aluguel);
+        publicarEvento(TipoEventoNotificacao.RESERVA_CRIADA, salvo);
+        return AluguelResponse.fromEntity(salvo);
     }
 
     @Transactional
@@ -84,7 +93,48 @@ public class AluguelService {
     public void cancelar(Long id) {
         Aluguel aluguel = buscarEntidade(id);
         validarCancelamento(aluguel);
+        publicarEvento(TipoEventoNotificacao.RESERVA_CANCELADA, aluguel);
         aluguelRepository.delete(aluguel);
+    }
+
+    @Transactional
+    public AluguelResponse realizarCheckIn(Long id) {
+        Aluguel aluguel = buscarEntidade(id);
+        if (aluguel.getStatus() != StatusAluguel.RESERVADA) {
+            throw new BusinessException("Check-in permitido apenas para reservas confirmadas.");
+        }
+        aluguel.setStatus(StatusAluguel.EM_ANDAMENTO);
+        Aluguel salvo = aluguelRepository.save(aluguel);
+        publicarEvento(TipoEventoNotificacao.CHECKIN_REALIZADO, salvo);
+        return AluguelResponse.fromEntity(salvo);
+    }
+
+    @Transactional
+    public AluguelResponse realizarCheckOut(Long id) {
+        Aluguel aluguel = buscarEntidade(id);
+        if (aluguel.getStatus() != StatusAluguel.EM_ANDAMENTO) {
+            throw new BusinessException("Check-out permitido apenas para hospedagens em andamento.");
+        }
+        aluguel.setStatus(StatusAluguel.FINALIZADA);
+        Aluguel salvo = aluguelRepository.save(aluguel);
+        publicarEvento(TipoEventoNotificacao.CHECKOUT_REALIZADO, salvo);
+        return AluguelResponse.fromEntity(salvo);
+    }
+
+    @Transactional
+    public AluguelResponse confirmarPagamento(Long id) {
+        Aluguel aluguel = buscarEntidade(id);
+        if (Boolean.TRUE.equals(aluguel.getPagamentoConfirmado())) {
+            throw new BusinessException("Pagamento ja foi confirmado para esta reserva.");
+        }
+        aluguel.setPagamentoConfirmado(true);
+        Aluguel salvo = aluguelRepository.save(aluguel);
+        publicarEvento(TipoEventoNotificacao.PAGAMENTO_CONFIRMADO, salvo);
+        return AluguelResponse.fromEntity(salvo);
+    }
+
+    private void publicarEvento(TipoEventoNotificacao tipo, Aluguel aluguel) {
+        gerenciadorNotificacoes.publicar(new NotificacaoEvento(tipo, aluguel));
     }
 
     @Transactional
