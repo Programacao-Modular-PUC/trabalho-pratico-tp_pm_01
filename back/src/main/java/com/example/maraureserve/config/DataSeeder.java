@@ -25,6 +25,8 @@ import com.example.maraureserve.repositories.ResidenciaRepository;
 @Configuration
 public class DataSeeder {
 
+    public static final String HOST_EMAIL = "acessohost@gmail.com";
+
     @Bean
     CommandLineRunner seedDatabase(
             ClienteRepository clienteRepository,
@@ -69,21 +71,21 @@ public class DataSeeder {
                 "Ponta do Muta",
                 "45520-000",
                 "(73) 3258-1001",
-                "reservas@villamuta.com"));
+                HOST_EMAIL));
         Residencia cassange = garantirResidencia(residenciaRepository, residencia(
                 "Refugio Lagoa do Cassange",
                 "87",
                 "Cassange",
                 "45520-000",
                 "(73) 3258-1002",
-                "contato@refugiocassange.com"));
+                HOST_EMAIL));
         Residencia taipu = garantirResidencia(residenciaRepository, residencia(
                 "Pousada Taipu Roots",
                 "304",
                 "Taipu de Fora",
                 "45520-000",
                 "(73) 3258-1003",
-                "ola@taipuroots.com"));
+                HOST_EMAIL));
 
         List<Quarto> quartosSeed = List.of(
                 garantirQuarto(quartoRepository, quartoIndividual(muta, "101", "280.00", 1, "45.00", true)),
@@ -95,6 +97,8 @@ public class DataSeeder {
                 garantirQuarto(quartoRepository, quartoIndividual(taipu, "R01", "310.00", 1, "40.00", true)),
                 garantirQuarto(quartoRepository, quartoCasal(taipu, "R12", "590.00", TipoCamaCasal.CASAL_PADRAO, true, false, "60.00", "30.00")),
                 garantirQuarto(quartoRepository, quartoFamilia(taipu, "R30", "1050.00", 4, 1, 1, 0, 4, "5.00", true)));
+
+        atribuirResidenciasAoHost(residenciaRepository);
 
         List<Cliente> clientes = List.of(visitante, mariana, rafael);
 
@@ -114,9 +118,24 @@ public class DataSeeder {
 
     private Residencia garantirResidencia(ResidenciaRepository repository, Residencia seed) {
         return repository.findAll().stream()
-                .filter(residencia -> seed.getEmail().equalsIgnoreCase(residencia.getEmail()))
+                .filter(residencia -> seed.getEndereco().equalsIgnoreCase(residencia.getEndereco()))
+                .filter(residencia -> seed.getNumero().equalsIgnoreCase(residencia.getNumero()))
                 .findFirst()
+                .map(existing -> {
+                    existing.setEmail(HOST_EMAIL);
+                    existing.setTelefone(seed.getTelefone());
+                    return repository.save(existing);
+                })
                 .orElseGet(() -> repository.save(seed));
+    }
+
+    private void atribuirResidenciasAoHost(ResidenciaRepository repository) {
+        repository.findAll().forEach(residencia -> {
+            if (!HOST_EMAIL.equalsIgnoreCase(residencia.getEmail())) {
+                residencia.setEmail(HOST_EMAIL);
+                repository.save(residencia);
+            }
+        });
     }
 
     private Quarto garantirQuarto(QuartoRepository repository, Quarto seed) {
