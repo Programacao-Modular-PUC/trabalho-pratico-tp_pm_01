@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { AlertCircle, CheckCircle2, Home, Plus } from 'lucide-react'
 import { api } from '../../../services/api'
+import { getLoggedHost } from '../../../services/auth'
 
-const initialForm = {
+const buildInitialForm = (hostEmail = '') => ({
     endereco: '',
     numero: '',
     bairro: '',
     cep: '',
     telefone: '',
-    email: ''
-}
+    email: hostEmail
+})
 
 function AddResidence() {
-    const [formData, setFormData] = useState(initialForm)
+    const host = getLoggedHost()
+    const [formData, setFormData] = useState(() => buildInitialForm(host?.email || ''))
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
@@ -29,8 +31,11 @@ function AddResidence() {
         setError('')
 
         try {
-            await api.createResidencia(formData)
-            setFormData(initialForm)
+            await api.createResidencia({
+                ...formData,
+                email: host?.email || formData.email
+            })
+            setFormData(buildInitialForm(host?.email || ''))
             setMessage('Residencia cadastrada com sucesso.')
         } catch (err) {
             setError(err.message)
@@ -60,7 +65,7 @@ function AddResidence() {
                             <Field label="Bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} placeholder="Ex: Barra Grande" />
                             <Field label="CEP" name="cep" value={formData.cep} onChange={handleInputChange} placeholder="45520-000" />
                             <Field label="Telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} placeholder="(73) 99999-9999" />
-                            <Field label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="contato@residencia.com" />
+                            <Field label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder={host?.email || 'contato@residencia.com'} readOnly={Boolean(host?.email)} />
                         </div>
                     </div>
 
@@ -92,7 +97,7 @@ function AddResidence() {
     )
 }
 
-function Field({ label, name, value, onChange, placeholder, type = 'text' }) {
+function Field({ label, name, value, onChange, placeholder, type = 'text', readOnly = false }) {
     return (
         <div>
             <label className="block text-white font-bold mb-2">{label} *</label>
@@ -102,7 +107,8 @@ function Field({ label, name, value, onChange, placeholder, type = 'text' }) {
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none transition"
+                readOnly={readOnly}
+                className={`w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none transition ${readOnly ? 'opacity-80 cursor-not-allowed' : ''}`}
                 required
             />
         </div>

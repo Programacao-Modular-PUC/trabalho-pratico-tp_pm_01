@@ -10,6 +10,7 @@ import {
     Menu,
     X,
     ChevronDown,
+    Bell,
     History
 } from 'lucide-react'
 import Explore from './pages/Dashboard'
@@ -18,6 +19,7 @@ import HistoryPage from './pages/History'
 import Favorites from './pages/Favorites'
 import Profile from './pages/Profile'
 import Info from './pages/Support'
+import Notifications from './pages/Notifications'
 import { clearSession, getLoggedCliente } from '../../services/auth'
 
 function GuestLayout() {
@@ -36,6 +38,12 @@ function GuestLayout() {
             label: 'Reservas',
             icon: Calendar,
             component: Reservations
+        },
+        {
+            id: 'notificacoes',
+            label: 'Notificacoes',
+            icon: Bell,
+            component: Notifications
         },
         {
             id: 'historico',

@@ -21,6 +21,26 @@ export function getLoggedCliente() {
     return session?.role === 'guest' ? session.cliente : null
 }
 
+export function getLoggedHost() {
+    const session = getSession()
+    return session?.role === 'host' ? session : null
+}
+
+export function getSessionEmail() {
+    const session = getSession()
+    if (session?.role === 'host') return session.email
+    if (session?.role === 'guest') return session.cliente?.email
+    return null
+}
+
+export function belongsToHostResidence(residence, hostEmail) {
+    if (!hostEmail || !residence) return false
+    return residence.email?.toLowerCase() === hostEmail.toLowerCase()
+}
+
+export const HOST_TEST_EMAIL = 'acessohost@gmail.com'
+export const GUEST_TEST_EMAIL = 'acessoguest@gmail.com'
+
 export const ROOM_TYPE_OPTIONS = [
     { value: 'all', label: 'Todos os tipos' },
     { value: 'INDIVIDUAL', label: 'Individual' },

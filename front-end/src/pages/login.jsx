@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
 import { api } from '../services/api'
-import { saveSession } from '../services/auth'
+import { saveSession, HOST_TEST_EMAIL, GUEST_TEST_EMAIL } from '../services/auth'
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -16,15 +16,24 @@ function Login() {
         setError('')
         setLoading(true)
 
-        if (email === 'acessohost@gmail.com' && password === 'testhost') {
-            saveSession({ role: 'host', email })
+        if (email === HOST_TEST_EMAIL && password === 'testhost') {
+            saveSession({ role: 'host', email: HOST_TEST_EMAIL, nome: 'Anfitriao Teste' })
             navigate('/host')
+            setLoading(false)
             return
         }
 
-        if (email === 'acessoguest@gmail.com' && password === 'testguest') {
-            saveSession({ role: 'guest', cliente: { id: 1, nome: 'Cliente Visitante', email } })
-            navigate('/guest')
+        if (email === GUEST_TEST_EMAIL && password === 'testguest') {
+            try {
+                const clientes = await api.listClientes()
+                const cliente = clientes.find((item) => item.email?.toLowerCase() === GUEST_TEST_EMAIL)
+                saveSession({ role: 'guest', cliente: cliente || { nome: 'Cliente Visitante', email: GUEST_TEST_EMAIL } })
+                navigate('/guest')
+            } catch (err) {
+                setError(err.message)
+            } finally {
+                setLoading(false)
+            }
             return
         }
 

@@ -9,16 +9,18 @@ import {
     LogOut,
     Menu,
     X,
-    ChevronDown
+    ChevronDown,
+    Bell
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Residences from './pages/Residences';
 import AddResidence from './pages/AddResidence';
 import Bookings from './pages/Bookings';
+import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
 import { Link } from 'react-router-dom';
-import { clearSession } from '../../services/auth';
+import { clearSession, getLoggedHost } from '../../services/auth';
 
 function HostLayout() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -44,6 +46,12 @@ function HostLayout() {
             component: Bookings
         },
         {
+            id: 'notifications',
+            label: 'Notificacoes',
+            icon: Bell,
+            component: Notifications
+        },
+        {
             id: 'add-residence',
             label: 'Adicionar Residência',
             icon: Plus,
@@ -64,6 +72,7 @@ function HostLayout() {
     ];
 
     const ActiveComponent = navItems.find(item => item.id === activeTab)?.component || Dashboard;
+    const host = getLoggedHost();
 
     return (
         <div className="flex h-screen bg-black">
@@ -130,7 +139,7 @@ function HostLayout() {
                     <div className="flex-1" />
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold">T</span>
+                            <span className="text-white font-bold">{host?.nome?.[0] || host?.email?.[0]?.toUpperCase() || 'H'}</span>
                         </div>
                     </div>
                 </div>

@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react'
 import { AlertCircle, Baby, Calendar, DollarSign, FileText, MapPin, RefreshCw, Users, X } from 'lucide-react'
 import CancelReservationButton from '../../../components/CancelReservationButton'
 import { api } from '../../../services/api'
+import { belongsToHostResidence, getLoggedHost } from '../../../services/auth'
 
 function Bookings() {
+    const host = getLoggedHost()
+    const hostEmail = host?.email
     const [bookings, setBookings] = useState([])
     const [selectedReceipt, setSelectedReceipt] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -18,7 +21,16 @@ function Bookings() {
         setLoading(true)
         setError('')
         try {
-            setBookings(await api.listAlugueis())
+            const [alugueis, residencias] = await Promise.all([
+                api.listAlugueis(),
+                api.listResidencias()
+            ])
+            const hostResidenceIds = new Set(
+                residencias
+                    .filter((item) => belongsToHostResidence(item, hostEmail))
+                    .map((item) => item.id)
+            )
+            setBookings(alugueis.filter((item) => hostResidenceIds.has(item.residenciaId)))
         } catch (err) {
             setError(err.message)
         } finally {
@@ -45,7 +57,7 @@ function Bookings() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                     <div>
                         <h1 className="text-3xl font-extrabold text-white tracking-tight">Painel de Reservas</h1>
-                        <p className="text-slate-400">Alugueis carregados da API Spring Boot</p>
+                        <p className="text-slate-400">Reservas das propriedades de {hostEmail || 'sua conta'}</p>
                     </div>
                     <button
                         onClick={loadBookings}

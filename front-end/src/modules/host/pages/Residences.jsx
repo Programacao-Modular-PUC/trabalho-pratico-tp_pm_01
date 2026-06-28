@@ -14,6 +14,7 @@ import {
     Users
 } from 'lucide-react'
 import { api } from '../../../services/api'
+import { belongsToHostResidence, getLoggedHost } from '../../../services/auth'
 
 const initialRoomForm = {
     codigo: '',
@@ -36,6 +37,8 @@ const initialRoomForm = {
 }
 
 function Residences() {
+    const host = getLoggedHost()
+    const hostEmail = host?.email
     const [residences, setResidences] = useState([])
     const [rooms, setRooms] = useState([])
     const [selectedResidence, setSelectedResidence] = useState(null)
@@ -58,7 +61,7 @@ function Residences() {
                 api.listResidencias(),
                 api.listQuartos()
             ])
-            setResidences(residenciasData)
+            setResidences(residenciasData.filter((item) => belongsToHostResidence(item, hostEmail)))
             setRooms(quartosData)
             setSelectedResidence((current) => {
                 if (!current) return null
@@ -209,7 +212,7 @@ function Residences() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Minhas Residencias</h1>
-                        <p className="text-gray-400">{residences.length} propriedades cadastradas na API</p>
+                        <p className="text-gray-400">{residences.length} propriedades vinculadas a {hostEmail || 'sua conta'}</p>
                     </div>
                     <button
                         onClick={loadData}
