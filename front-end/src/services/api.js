@@ -68,5 +68,11 @@ export const api = {
         body: JSON.stringify(data)
     }),
     cancelAluguel: (id) => request(`/alugueis/${id}/cancelar`, { method: 'POST' }),
-    deleteAluguel: (id) => request(`/alugueis/${id}/cancelar`, { method: 'POST' })
+    deleteAluguel: (id) => request(`/alugueis/${id}/cancelar`, { method: 'POST' }),
+    checkInAluguel: (id) => request(`/alugueis/${id}/check-in`, { method: 'POST' }),
+    checkOutAluguel: (id) => request(`/alugueis/${id}/check-out`, { method: 'POST' }),
+    confirmarPagamentoAluguel: (id) => request(`/alugueis/${id}/confirmar-pagamento`, { method: 'POST' }),
+
+    listNotificacoes: () => request('/notificacoes'),
+    listNotificacoesPorEvento: (tipo) => request(`/notificacoes/evento/${tipo}`)
 }
