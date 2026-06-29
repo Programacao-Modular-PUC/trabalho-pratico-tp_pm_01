@@ -24,9 +24,24 @@ export function formatNotificacaoDate(value) {
 }
 
 export function filterNotificacoesPorEmail(notificacoes, email) {
-    if (!email) return []
-    const normalized = email.toLowerCase()
-    return (notificacoes || []).filter(
-        (item) => item.destinatario?.toLowerCase() === normalized
+    return filterNotificacoesPorDestinatarios(notificacoes, email ? [email] : [])
+}
+
+export function filterNotificacoesPorDestinatarios(notificacoes, destinatarios = []) {
+    const allowed = new Set(
+        destinatarios.filter(Boolean).map((item) => item.toLowerCase())
+    )
+    if (allowed.size === 0) return []
+    return (notificacoes || []).filter((item) =>
+        allowed.has(item.destinatario?.toLowerCase())
+    )
+}
+
+export function filterNotificacoesForHost(notificacoes, destinatarios = []) {
+    const porEmail = filterNotificacoesPorDestinatarios(notificacoes, destinatarios)
+    if (porEmail.length > 0) return porEmail
+
+    return (notificacoes || []).filter((item) =>
+        item.conteudo?.includes('Perfil: proprietario')
     )
 }

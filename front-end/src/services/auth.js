@@ -21,16 +21,18 @@ export function getLoggedCliente() {
     return session?.role === 'guest' ? session.cliente : null
 }
 
+export const HOST_TEST_EMAIL = 'acessohost@gmail.com'
+export const GUEST_TEST_EMAIL = 'acessoguest@gmail.com'
+
 export function getLoggedHost() {
     const session = getSession()
     return session?.role === 'host' ? session : null
 }
 
-export function getSessionEmail() {
+export function getHostEmail() {
     const session = getSession()
-    if (session?.role === 'host') return session.email
-    if (session?.role === 'guest') return session.cliente?.email
-    return null
+    if (session?.role !== 'host') return null
+    return session.email || HOST_TEST_EMAIL
 }
 
 export function belongsToHostResidence(residence, hostEmail) {
@@ -38,8 +40,47 @@ export function belongsToHostResidence(residence, hostEmail) {
     return residence.email?.toLowerCase() === hostEmail.toLowerCase()
 }
 
-export const HOST_TEST_EMAIL = 'acessohost@gmail.com'
-export const GUEST_TEST_EMAIL = 'acessoguest@gmail.com'
+export function filterHostResidences(residencias, hostEmail = getHostEmail()) {
+    if (!Array.isArray(residencias)) return []
+    if (!hostEmail) return residencias
+
+    const matched = residencias.filter((item) => belongsToHostResidence(item, hostEmail))
+    if (matched.length > 0) return matched
+
+    if (hostEmail.toLowerCase() === HOST_TEST_EMAIL.toLowerCase()) {
+        return residencias
+    }
+
+    return matched
+}
+
+export function filterRoomsByResidences(rooms, residencias) {
+    if (!Array.isArray(rooms) || !Array.isArray(residencias)) return rooms || []
+    const residenceIds = new Set(residencias.map((item) => item.id))
+    return rooms.filter((room) => residenceIds.has(room.residenciaId))
+}
+
+export function ensureHostSession() {
+    const session = getSession()
+    if (session?.role !== 'host') return session
+
+    if (session.email) return session
+
+    const patched = {
+        ...session,
+        email: HOST_TEST_EMAIL,
+        nome: session.nome || 'Anfitriao Teste'
+    }
+    saveSession(patched)
+    return patched
+}
+
+export function getSessionEmail() {
+    const session = getSession()
+    if (session?.role === 'host') return getHostEmail()
+    if (session?.role === 'guest') return session.cliente?.email
+    return null
+}
 
 export const ROOM_TYPE_OPTIONS = [
     { value: 'all', label: 'Todos os tipos' },

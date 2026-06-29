@@ -4,12 +4,20 @@ import { api } from '../services/api'
 import {
     EVENTO_LABELS,
     EVENTO_COLORS,
+    filterNotificacoesForHost,
     filterNotificacoesPorEmail,
     formatNotificacaoDate,
     labelEvento
 } from '../utils/notificationUtils'
 
-function NotificationsPage({ userEmail, title, subtitle, theme = 'light' }) {
+function NotificationsPage({
+    userEmail,
+    recipientEmails,
+    audience = 'guest',
+    title,
+    subtitle,
+    theme = 'light'
+}) {
     const [notificacoes, setNotificacoes] = useState([])
     const [filter, setFilter] = useState('all')
     const [loading, setLoading] = useState(true)
@@ -17,18 +25,32 @@ function NotificationsPage({ userEmail, title, subtitle, theme = 'light' }) {
 
     const isDark = theme === 'dark'
 
+    const recipientLabel = useMemo(() => {
+        if (audience === 'host' && recipientEmails?.length) {
+            return recipientEmails.join(', ')
+        }
+        return userEmail || 'Nao identificado'
+    }, [audience, recipientEmails, userEmail])
+
     const loadNotificacoes = useCallback(async () => {
         setLoading(true)
         setError('')
         try {
             const items = await api.listNotificacoes()
-            setNotificacoes(filterNotificacoesPorEmail(items, userEmail))
+            if (audience === 'host') {
+                const destinatarios = recipientEmails?.length
+                    ? recipientEmails
+                    : (userEmail ? [userEmail] : [])
+                setNotificacoes(filterNotificacoesForHost(items, destinatarios))
+            } else {
+                setNotificacoes(filterNotificacoesPorEmail(items, userEmail))
+            }
         } catch (err) {
             setError(err.message)
         } finally {
             setLoading(false)
         }
-    }, [userEmail])
+    }, [audience, recipientEmails, userEmail])
 
     useEffect(() => {
         loadNotificacoes()
@@ -83,7 +105,7 @@ function NotificationsPage({ userEmail, title, subtitle, theme = 'light' }) {
                         {notificacoes.length} notificacao(oes)
                     </span>
                     <span className={`rounded-full px-4 py-2 ${isDark ? 'bg-slate-900 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>
-                        Destinatario: {userEmail || 'Nao identificado'}
+                        Destinatario: {recipientLabel}
                     </span>
                 </div>
             </div>
@@ -115,8 +137,9 @@ function NotificationsPage({ userEmail, title, subtitle, theme = 'light' }) {
                 <div className={`${card} p-8 ${muted}`}>Carregando notificacoes...</div>
             ) : filtered.length === 0 ? (
                 <div className={`${card} p-8 ${muted}`}>
-                    Nenhuma notificacao encontrada para {userEmail || 'este usuario'}.
+                    Nenhuma notificacao encontrada para {recipientLabel}.
                     {filter !== 'all' && ' Tente remover o filtro de evento.'}
+                    {filter === 'all' && audience === 'host' && ' Faca uma reserva como hospede ou confirme check-in/pagamento para gerar alertas.'}
                 </div>
             ) : (
                 <div className="space-y-4">

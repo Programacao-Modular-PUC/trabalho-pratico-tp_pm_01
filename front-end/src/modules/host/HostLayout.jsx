@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     LayoutDashboard,
     Home,
@@ -20,11 +20,15 @@ import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
 import { Link } from 'react-router-dom';
-import { clearSession, getLoggedHost } from '../../services/auth';
+import { clearSession, ensureHostSession, getLoggedHost } from '../../services/auth';
 
 function HostLayout() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    useEffect(() => {
+        ensureHostSession()
+    }, [])
 
     const navItems = [
         {

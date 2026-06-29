@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AlertCircle, CheckCircle2, Home, Plus } from 'lucide-react'
 import { api } from '../../../services/api'
-import { getLoggedHost } from '../../../services/auth'
+import { getHostEmail } from '../../../services/auth'
 
 const buildInitialForm = (hostEmail = '') => ({
     endereco: '',
@@ -13,8 +13,8 @@ const buildInitialForm = (hostEmail = '') => ({
 })
 
 function AddResidence() {
-    const host = getLoggedHost()
-    const [formData, setFormData] = useState(() => buildInitialForm(host?.email || ''))
+    const hostEmail = getHostEmail()
+    const [formData, setFormData] = useState(() => buildInitialForm(hostEmail || ''))
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
@@ -33,9 +33,9 @@ function AddResidence() {
         try {
             await api.createResidencia({
                 ...formData,
-                email: host?.email || formData.email
+                email: hostEmail || formData.email
             })
-            setFormData(buildInitialForm(host?.email || ''))
+            setFormData(buildInitialForm(hostEmail || ''))
             setMessage('Residencia cadastrada com sucesso.')
         } catch (err) {
             setError(err.message)
@@ -65,7 +65,7 @@ function AddResidence() {
                             <Field label="Bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} placeholder="Ex: Barra Grande" />
                             <Field label="CEP" name="cep" value={formData.cep} onChange={handleInputChange} placeholder="45520-000" />
                             <Field label="Telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} placeholder="(73) 99999-9999" />
-                            <Field label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder={host?.email || 'contato@residencia.com'} readOnly={Boolean(host?.email)} />
+                            <Field label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder={hostEmail || 'contato@residencia.com'} readOnly={Boolean(hostEmail)} />
                         </div>
                     </div>
 

@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { AlertCircle, Baby, Calendar, DollarSign, FileText, MapPin, RefreshCw, Users, X } from 'lucide-react'
 import CancelReservationButton from '../../../components/CancelReservationButton'
 import { api } from '../../../services/api'
-import { belongsToHostResidence, getLoggedHost } from '../../../services/auth'
+import { ensureHostSession, filterHostResidences, getHostEmail } from '../../../services/auth'
 
 function Bookings() {
-    const host = getLoggedHost()
-    const hostEmail = host?.email
+    const hostEmail = getHostEmail()
     const [bookings, setBookings] = useState([])
     const [selectedReceipt, setSelectedReceipt] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -21,15 +20,14 @@ function Bookings() {
         setLoading(true)
         setError('')
         try {
+            ensureHostSession()
+            const email = getHostEmail()
             const [alugueis, residencias] = await Promise.all([
                 api.listAlugueis(),
                 api.listResidencias()
             ])
-            const hostResidenceIds = new Set(
-                residencias
-                    .filter((item) => belongsToHostResidence(item, hostEmail))
-                    .map((item) => item.id)
-            )
+            const hostResidences = filterHostResidences(residencias, email)
+            const hostResidenceIds = new Set(hostResidences.map((item) => item.id))
             setBookings(alugueis.filter((item) => hostResidenceIds.has(item.residenciaId)))
         } catch (err) {
             setError(err.message)

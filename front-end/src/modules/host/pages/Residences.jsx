@@ -14,7 +14,12 @@ import {
     Users
 } from 'lucide-react'
 import { api } from '../../../services/api'
-import { belongsToHostResidence, getLoggedHost } from '../../../services/auth'
+import {
+    ensureHostSession,
+    filterHostResidences,
+    filterRoomsByResidences,
+    getHostEmail
+} from '../../../services/auth'
 
 const initialRoomForm = {
     codigo: '',
@@ -37,8 +42,7 @@ const initialRoomForm = {
 }
 
 function Residences() {
-    const host = getLoggedHost()
-    const hostEmail = host?.email
+    const hostEmail = getHostEmail()
     const [residences, setResidences] = useState([])
     const [rooms, setRooms] = useState([])
     const [selectedResidence, setSelectedResidence] = useState(null)
@@ -57,15 +61,18 @@ function Residences() {
         setLoading(true)
         setError('')
         try {
+            ensureHostSession()
+            const email = getHostEmail()
             const [residenciasData, quartosData] = await Promise.all([
                 api.listResidencias(),
                 api.listQuartos()
             ])
-            setResidences(residenciasData.filter((item) => belongsToHostResidence(item, hostEmail)))
-            setRooms(quartosData)
+            const hostResidences = filterHostResidences(residenciasData, email)
+            setResidences(hostResidences)
+            setRooms(filterRoomsByResidences(quartosData, hostResidences))
             setSelectedResidence((current) => {
                 if (!current) return null
-                return residenciasData.find((item) => item.id === current.id) || null
+                return hostResidences.find((item) => item.id === current.id) || null
             })
         } catch (err) {
             setError(err.message)
