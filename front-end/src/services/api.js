@@ -74,5 +74,35 @@ export const api = {
     confirmarPagamentoAluguel: (id) => request(`/alugueis/${id}/confirmar-pagamento`, { method: 'POST' }),
 
     listNotificacoes: () => request('/notificacoes'),
-    listNotificacoesPorEvento: (tipo) => request(`/notificacoes/evento/${tipo}`)
+    listNotificacoesPorEvento: (tipo) => request(`/notificacoes/evento/${tipo}`),
+
+    getRelatorioFaturamentoMensal: (ano) => {
+        const q = ano ? `?ano=${ano}` : '';
+        return request(`/relatorios/faturamento-mensal${q}`);
+    },
+    getRelatorioTaxaOcupacao: (dataInicio, dataFim) => {
+        const p = new URLSearchParams();
+        if (dataInicio) p.set('dataInicio', dataInicio);
+        if (dataFim) p.set('dataFim', dataFim);
+        const q = p.toString();
+        return request(`/relatorios/taxa-ocupacao${q ? `?${q}` : ''}`);
+    },
+    getRelatorioClientesFrequentes: (limite) => {
+        const q = limite ? `?limite=${limite}` : '';
+        return request(`/relatorios/clientes-frequentes${q}`);
+    },
+    getRelatorioQuartosMaisAlugados: (limite) => {
+        const q = limite ? `?limite=${limite}` : '';
+        return request(`/relatorios/quartos-mais-alugados${q}`);
+    },
+    getRelatorioReceitaPorTipoQuarto: () => request('/relatorios/receita-por-tipo-quarto'),
+    getRelatorioHistoricoReservas: ({ dataInicio, dataFim, clienteId, quartoId } = {}) => {
+        const p = new URLSearchParams();
+        if (dataInicio) p.set('dataInicio', dataInicio);
+        if (dataFim) p.set('dataFim', dataFim);
+        if (clienteId) p.set('clienteId', clienteId);
+        if (quartoId) p.set('quartoId', quartoId);
+        const q = p.toString();
+        return request(`/relatorios/historico-reservas${q ? `?${q}` : ''}`);
+    },
 }

@@ -100,14 +100,79 @@ public class DataSeeder {
 
         atribuirResidenciasAoHost(residenciaRepository);
 
-        List<Cliente> clientes = List.of(visitante, mariana, rafael);
-
         if (aluguelRepository.count() == 0) {
-            LocalDate hoje = LocalDate.now();
             aluguelRepository.saveAll(List.of(
-                    aluguel(clientes.get(1), quartosSeed.get(2), hoje.plusDays(3), hoje.plusDays(7), 5, false),
-                    aluguel(clientes.get(2), quartosSeed.get(4), hoje.plusDays(9), hoje.plusDays(12), 2, true),
-                    aluguel(clientes.get(0), quartosSeed.get(5), hoje.plusDays(15), hoje.plusDays(20), 6, false)));
+                    // Janeiro — finalizados
+                    aluguelFinalizado(mariana,   quartosSeed.get(0), "2025-01-05", "2025-01-08", 1, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(1), "2025-01-10", "2025-01-14", 2, true),
+                    aluguelFinalizado(visitante, quartosSeed.get(6), "2025-01-20", "2025-01-25", 1, false),
+                    // Fevereiro — finalizados
+                    aluguelFinalizado(mariana,   quartosSeed.get(3), "2025-02-03", "2025-02-07", 1, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(7), "2025-02-12", "2025-02-16", 2, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(2), "2025-02-18", "2025-02-23", 4, false),
+                    // Março — finalizados
+                    aluguelFinalizado(mariana,   quartosSeed.get(4), "2025-03-01", "2025-03-05", 2, true),
+                    aluguelFinalizado(rafael,    quartosSeed.get(8), "2025-03-10", "2025-03-15", 5, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(0), "2025-03-20", "2025-03-22", 1, false),
+                    // Abril — finalizados
+                    aluguelFinalizado(mariana,   quartosSeed.get(5), "2025-04-02", "2025-04-07", 3, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(1), "2025-04-14", "2025-04-18", 2, true),
+                    aluguelFinalizado(visitante, quartosSeed.get(6), "2025-04-22", "2025-04-26", 1, false),
+                    // Maio — finalizados
+                    aluguelFinalizado(mariana,   quartosSeed.get(2), "2025-05-01", "2025-05-06", 5, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(3), "2025-05-10", "2025-05-13", 1, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(7), "2025-05-20", "2025-05-25", 2, false),
+                    // Junho — finalizados
+                    aluguelFinalizado(mariana,   quartosSeed.get(8), "2025-06-03", "2025-06-08", 4, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(0), "2025-06-15", "2025-06-18", 1, false),
+                    // Reservas futuras
+                    aluguelReservado(visitante,  quartosSeed.get(4), "2025-08-10", "2025-08-14", 2, true),
+                    aluguelReservado(mariana,    quartosSeed.get(5), "2025-08-20", "2025-08-25", 3, false),
+                    aluguelReservado(rafael,     quartosSeed.get(2), "2025-09-01", "2025-09-07", 6, false)));
+        }
+
+        if (aluguelRepository.countBySaidaAno(2026) == 0) {
+            aluguelRepository.saveAll(List.of(
+                    // ── Janeiro 2026 — alta temporada (verão) ──────────────────────
+                    aluguelFinalizado(rafael,    quartosSeed.get(1), "2026-01-02", "2026-01-07", 2, false),
+                    aluguelFinalizado(mariana,   quartosSeed.get(4), "2026-01-04", "2026-01-10", 2, true),
+                    aluguelFinalizado(visitante, quartosSeed.get(8), "2026-01-07", "2026-01-14", 5, false),
+                    aluguelFinalizado(mariana,   quartosSeed.get(2), "2026-01-14", "2026-01-20", 4, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(5), "2026-01-18", "2026-01-24", 3, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(6), "2026-01-24", "2026-01-31", 1, false),
+                    // ── Fevereiro 2026 — carnaval ───────────────────────────────────
+                    aluguelFinalizado(mariana,   quartosSeed.get(3), "2026-02-01", "2026-02-06", 1, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(7), "2026-02-04", "2026-02-10", 2, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(0), "2026-02-10", "2026-02-16", 1, false),
+                    aluguelFinalizado(mariana,   quartosSeed.get(5), "2026-02-16", "2026-02-21", 3, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(8), "2026-02-22", "2026-02-28", 4, false),
+                    // ── Março 2026 ──────────────────────────────────────────────────
+                    aluguelFinalizado(visitante, quartosSeed.get(2), "2026-03-02", "2026-03-07", 3, false),
+                    aluguelFinalizado(mariana,   quartosSeed.get(6), "2026-03-09", "2026-03-14", 1, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(1), "2026-03-17", "2026-03-22", 2, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(4), "2026-03-24", "2026-03-29", 2, true),
+                    // ── Abril 2026 ──────────────────────────────────────────────────
+                    aluguelFinalizado(mariana,   quartosSeed.get(0), "2026-04-01", "2026-04-06", 1, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(3), "2026-04-07", "2026-04-12", 1, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(7), "2026-04-14", "2026-04-19", 2, false),
+                    aluguelFinalizado(mariana,   quartosSeed.get(5), "2026-04-22", "2026-04-28", 3, false),
+                    // ── Maio 2026 — baixa temporada ─────────────────────────────────
+                    aluguelFinalizado(rafael,    quartosSeed.get(8), "2026-05-03", "2026-05-08", 4, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(2), "2026-05-12", "2026-05-17", 3, false),
+                    aluguelFinalizado(mariana,   quartosSeed.get(6), "2026-05-20", "2026-05-25", 1, false),
+                    // ── Junho 2026 ──────────────────────────────────────────────────
+                    aluguelFinalizado(rafael,    quartosSeed.get(0), "2026-06-02", "2026-06-07", 1, false),
+                    aluguelFinalizado(visitante, quartosSeed.get(4), "2026-06-08", "2026-06-13", 2, true),
+                    aluguelFinalizado(mariana,   quartosSeed.get(1), "2026-06-14", "2026-06-20", 2, false),
+                    aluguelFinalizado(rafael,    quartosSeed.get(7), "2026-06-22", "2026-06-27", 2, false),
+                    // ── Julho 2026 — em andamento (check-in já realizado) ───────────
+                    aluguelEmAndamento(mariana,   quartosSeed.get(3), "2026-06-29", "2026-07-04", 1, false),
+                    aluguelEmAndamento(visitante, quartosSeed.get(8), "2026-06-30", "2026-07-06", 5, false),
+                    // ── Julho 2026 — reservas confirmadas ───────────────────────────
+                    aluguelReservado(rafael,     quartosSeed.get(5), "2026-07-05", "2026-07-11", 3, false),
+                    aluguelReservado(mariana,    quartosSeed.get(2), "2026-07-10", "2026-07-17", 4, false),
+                    aluguelReservado(visitante,  quartosSeed.get(6), "2026-07-18", "2026-07-24", 1, false),
+                    aluguelReservado(rafael,     quartosSeed.get(4), "2026-07-24", "2026-07-31", 2, true)));
         }
     }
 
@@ -255,7 +320,26 @@ public class DataSeeder {
         return quarto;
     }
 
-    private Aluguel aluguel(Cliente cliente, Quarto quarto, LocalDate entrada, LocalDate saida, int hospedes, boolean berco) {
+    private Aluguel aluguelFinalizado(Cliente cliente, Quarto quarto, String entrada, String saida, int hospedes, boolean berco) {
+        Aluguel a = aluguelBase(cliente, quarto, LocalDate.parse(entrada), LocalDate.parse(saida), hospedes, berco);
+        a.setStatus(com.example.maraureserve.models.StatusAluguel.FINALIZADA);
+        a.setPagamentoConfirmado(true);
+        return a;
+    }
+
+    private Aluguel aluguelEmAndamento(Cliente cliente, Quarto quarto, String entrada, String saida, int hospedes, boolean berco) {
+        Aluguel a = aluguelBase(cliente, quarto, LocalDate.parse(entrada), LocalDate.parse(saida), hospedes, berco);
+        a.setStatus(com.example.maraureserve.models.StatusAluguel.EM_ANDAMENTO);
+        return a;
+    }
+
+    private Aluguel aluguelReservado(Cliente cliente, Quarto quarto, String entrada, String saida, int hospedes, boolean berco) {
+        Aluguel a = aluguelBase(cliente, quarto, LocalDate.parse(entrada), LocalDate.parse(saida), hospedes, berco);
+        a.setStatus(com.example.maraureserve.models.StatusAluguel.RESERVADA);
+        return a;
+    }
+
+    private Aluguel aluguelBase(Cliente cliente, Quarto quarto, LocalDate entrada, LocalDate saida, int hospedes, boolean berco) {
         Aluguel aluguel = new Aluguel();
         aluguel.setCliente(cliente);
         aluguel.setQuarto(quarto);
@@ -264,7 +348,7 @@ public class DataSeeder {
         aluguel.setDataSaida(LocalDateTime.of(saida, LocalTime.of(12, 0)));
         aluguel.setQuantidadeHospedes(hospedes);
         aluguel.setQuantidadeDiarias(Math.max(1, (int) (saida.toEpochDay() - entrada.toEpochDay())));
-        aluguel.setBercoSolicitado(Boolean.TRUE.equals(berco) && Boolean.TRUE.equals(quarto.getPermiteBerco()));
+        aluguel.setBercoSolicitado(berco && Boolean.TRUE.equals(quarto.getPermiteBerco()));
         aluguel.setValorDiaria(quarto.calcularValorDiaria(hospedes, aluguel.getBercoSolicitado()));
         aluguel.setValorFinal(aluguel.getValorDiaria().multiply(BigDecimal.valueOf(aluguel.getQuantidadeDiarias())));
         return aluguel;
