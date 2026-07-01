@@ -10,7 +10,8 @@ import {
     Menu,
     X,
     ChevronDown,
-    Bell
+    Bell,
+    BarChart3
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Residences from './pages/Residences';
@@ -19,6 +20,7 @@ import Bookings from './pages/Bookings';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
+import Relatorios from './pages/Relatorios';
 import { Link } from 'react-router-dom';
 import { clearSession, ensureHostSession, getLoggedHost } from '../../services/auth';
 
@@ -54,6 +56,12 @@ function HostLayout() {
             label: 'Notificacoes',
             icon: Bell,
             component: Notifications
+        },
+        {
+            id: 'relatorios',
+            label: 'Relatórios',
+            icon: BarChart3,
+            component: Relatorios
         },
         {
             id: 'add-residence',
