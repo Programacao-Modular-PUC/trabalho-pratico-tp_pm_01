@@ -2,8 +2,6 @@ package com.example.maraureserve.reports;
 
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,13 +17,13 @@ public class GerenciadorRelatorios {
 
     private static volatile GerenciadorRelatorios instancia;
 
-    private final Map<String, RelatorioStrategy> estrategias = new HashMap<>();
+    private final RelatorioFactory relatorioFactory;
 
-    public GerenciadorRelatorios(List<RelatorioStrategy> todasEstrategias) {
+    public GerenciadorRelatorios(RelatorioFactory relatorioFactory) {
         if (instancia != null) {
             throw new IllegalStateException("GerenciadorRelatorios já foi instanciado — use getInstance()");
         }
-        todasEstrategias.forEach(e -> estrategias.put(e.getTipo(), e));
+        this.relatorioFactory = relatorioFactory;
         instancia = this;
     }
 
@@ -37,15 +35,10 @@ public class GerenciadorRelatorios {
     }
 
     public Object gerarRelatorio(String tipo, Map<String, Object> parametros) {
-        RelatorioStrategy estrategia = estrategias.get(tipo);
-        if (estrategia == null) {
-            throw new IllegalArgumentException("Tipo de relatório não encontrado: " + tipo
-                    + ". Tipos disponíveis: " + estrategias.keySet());
-        }
-        return estrategia.gerar(parametros);
+        return relatorioFactory.criar(tipo).gerar(parametros);
     }
 
     public Set<String> getTiposDisponiveis() {
-        return estrategias.keySet();
+        return relatorioFactory.getTiposDisponiveis();
     }
 }
