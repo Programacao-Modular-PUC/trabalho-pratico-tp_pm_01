@@ -1,8 +1,10 @@
 import React from 'react';
 import { ArrowLeft, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePublicTheme } from '../hooks/usePublicTheme';
 
 function Gallery() {
+    const t = usePublicTheme();
     const images = [
         { src: '/img/praia-do-muta.jpg', alt: 'Praia do Mutá' },
         { src: '/img/praia_de_taipu_de_fora.jpg', alt: 'Praia de Taipu de Fora' },
@@ -13,7 +15,7 @@ function Gallery() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-amber-400 selection:text-black antialiased">
+        <div className={t.page}>
             <header className="relative pt-40 pb-24 lg:pt-56 lg:pb-40 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
                     <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full" />
@@ -22,7 +24,7 @@ function Gallery() {
 
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="relative z-10">
-                        <Link to="/" className="inline-flex items-center gap-2 text-amber-400 hover:text-white transition mb-8">
+                        <Link to="/" className={`inline-flex items-center gap-2 text-amber-400 transition mb-8 ${t.linkAccent}`}>
                             <ArrowLeft size={20} />
                             <span className="font-medium">Voltar</span>
                         </Link>
@@ -33,7 +35,7 @@ function Gallery() {
                         <h1 className="text-6xl lg:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
                             Península de <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">Maraú</span>
                         </h1>
-                        <p className="text-lg lg:text-xl text-gray-400 leading-relaxed max-w-xl font-medium mb-12">
+                        <p className={`text-lg lg:text-xl ${t.muted} leading-relaxed max-w-xl font-medium mb-12`}>
                             Explore as belezas naturais e os momentos únicos capturados na Península de Maraú, Bahia.
                         </p>
                     </div>
@@ -51,7 +53,7 @@ function Gallery() {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition">{image.alt}</h3>
+                                <h3 className={`text-lg font-bold ${t.heading} group-hover:text-amber-400 transition`}>{image.alt}</h3>
                             </div>
                         </div>
                     ))}

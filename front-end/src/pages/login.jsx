@@ -1,8 +1,16 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { Mail, Lock, ArrowRight, ArrowLeft, Home, User } from 'lucide-react'
 import { api } from '../services/api'
-import { saveSession, HOST_TEST_EMAIL, GUEST_TEST_EMAIL } from '../services/auth'
+import {
+    saveSession,
+    HOST_TEST_EMAIL,
+    GUEST_TEST_EMAIL,
+    TEST_GUEST,
+    TEST_GUEST_CLIENTE,
+    TEST_HOST,
+    TEST_OTHER_CLIENTS
+} from '../services/auth'
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -17,7 +25,7 @@ function Login() {
         setLoading(true)
 
         if (email === HOST_TEST_EMAIL && password === 'testhost') {
-            saveSession({ role: 'host', email: HOST_TEST_EMAIL, nome: 'Anfitriao Teste' })
+            saveSession({ role: 'host', email: HOST_TEST_EMAIL, nome: TEST_HOST.nome })
             navigate('/host')
             setLoading(false)
             return
@@ -27,10 +35,14 @@ function Login() {
             try {
                 const clientes = await api.listClientes()
                 const cliente = clientes.find((item) => item.email?.toLowerCase() === GUEST_TEST_EMAIL)
-                saveSession({ role: 'guest', cliente: cliente || { nome: 'Cliente Visitante', email: GUEST_TEST_EMAIL } })
+                saveSession({
+                    role: 'guest',
+                    cliente: cliente || TEST_GUEST_CLIENTE
+                })
                 navigate('/guest')
-            } catch (err) {
-                setError(err.message)
+            } catch {
+                saveSession({ role: 'guest', cliente: TEST_GUEST_CLIENTE })
+                navigate('/guest')
             } finally {
                 setLoading(false)
             }
@@ -64,8 +76,16 @@ function Login() {
                 </div>
             </div>
 
+            <Link
+                to="/"
+                className="absolute top-6 left-6 z-10 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0d0d0f]/80 px-4 py-2 text-sm font-bold text-gray-300 transition hover:border-amber-400/40 hover:text-amber-400"
+            >
+                <ArrowLeft size={16} />
+                Voltar para a tela inicial
+            </Link>
+
             <div className="min-h-screen flex items-center justify-center px-6 py-24">
-                <div className="w-full max-w-6xl grid gap-12 lg:grid-cols-[1.3fr_1fr] items-center">
+                <div className="w-full max-w-6xl grid gap-12 lg:grid-cols-[1.3fr_1fr] items-start">
                     <div className="space-y-8">
                         <div>
                             <h1 className="text-5xl lg:text-6xl font-black leading-tight tracking-tighter mb-6">
@@ -74,6 +94,44 @@ function Login() {
                             <p className="max-w-xl text-gray-400 text-lg leading-relaxed font-medium">
                                 Entre com seu email cadastrado para reservar quartos, acompanhar estadias e continuar sua viagem por Marau.
                             </p>
+                        </div>
+
+                        <div className="rounded-[2rem] border border-white/10 bg-[#0d0d0f]/80 p-6 space-y-5">
+                            <p className="text-amber-400 font-bold text-sm uppercase tracking-wider">Acessos de teste integrados</p>
+
+                            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 space-y-3">
+                                <div className="flex items-center gap-2 text-amber-300 font-bold">
+                                    <Home size={18} /> Host (proprietario)
+                                </div>
+                                <p className="text-gray-300 text-sm"><strong>Login:</strong> {TEST_HOST.email} / {TEST_HOST.password}</p>
+                                <p className="text-gray-400 text-sm">Proprietario das residencias:</p>
+                                <ul className="text-gray-300 text-sm space-y-1 ml-4 list-disc">
+                                    {TEST_HOST.residencias.map((item) => (
+                                        <li key={item.id}>
+                                            {item.nome} ({item.bairro}) — quartos {item.quartos.join(', ')}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 space-y-3">
+                                <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                                    <User size={18} /> Guest demo (hospede)
+                                </div>
+                                <p className="text-gray-300 text-sm"><strong>Login:</strong> {TEST_GUEST.email} / {TEST_GUEST.password}</p>
+                                <p className="text-gray-400 text-sm">Cliente: {TEST_GUEST.cliente.nome} — reservas nos imoveis do host acima.</p>
+                                <ul className="text-gray-300 text-sm space-y-1 ml-4 list-disc">
+                                    {TEST_GUEST.reservasRelacionadas.map((item) => (
+                                        <li key={item.periodo}>
+                                            {item.quarto} @ {item.residencia} ({item.periodo}) — {item.status}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="text-gray-400 text-xs">
+                                Outros clientes cadastrados (sem senha): {TEST_OTHER_CLIENTS.map((item) => item.email).join(', ')}
+                            </div>
                         </div>
                     </div>
 
@@ -113,9 +171,14 @@ function Login() {
                             </label>
 
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <Link to="/register" className="text-sm text-amber-400 font-bold hover:text-amber-300">
-                                    Criar conta de cliente
-                                </Link>
+                                <div className="flex flex-col gap-2">
+                                    <Link to="/register" className="text-sm text-amber-400 font-bold hover:text-amber-300">
+                                        Criar conta de cliente
+                                    </Link>
+                                    <Link to="/" className="text-sm text-gray-400 font-semibold hover:text-white">
+                                        Voltar para a tela inicial
+                                    </Link>
+                                </div>
                                 <button
                                     type="submit"
                                     disabled={loading}
@@ -132,12 +195,6 @@ function Login() {
                                 {error}
                             </div>
                         )}
-
-                        <div className="mt-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 p-5 text-sm">
-                            <p className="text-amber-400 font-bold mb-2">Acessos de teste:</p>
-                            <p className="text-gray-300"><strong>Cliente demo:</strong> acessoguest@gmail.com / testguest</p>
-                            <p className="text-gray-300"><strong>Host:</strong> acessohost@gmail.com / testhost</p>
-                        </div>
                     </div>
                 </div>
             </div>

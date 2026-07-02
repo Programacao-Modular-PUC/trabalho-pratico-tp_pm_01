@@ -16,6 +16,12 @@ import Searchbar from '../components/searchbar'
 import ReservationModal from '../components/ReservationModal'
 import { api } from '../services/api'
 import { buildAccommodation, ROOM_TYPE_OPTIONS } from '../services/auth'
+import {
+    DEFAULT_LOCATION,
+    filterAccommodations,
+    parseSearchFromUrl
+} from '../utils/searchUtils'
+import { usePublicTheme } from '../hooks/usePublicTheme'
 
 const fallbackAccommodations = [
     {
@@ -64,13 +70,19 @@ const fallbackAccommodations = [
 
 function Hospedagem() {
     const navigate = useNavigate()
+    const t = usePublicTheme()
     const location = useLocation()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [accommodations, setAccommodations] = useState(fallbackAccommodations)
+    const [alugueis, setAlugueis] = useState([])
     const [loading, setLoading] = useState(true)
     const [apiError, setApiError] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
+    const [searchLocation, setSearchLocation] = useState(DEFAULT_LOCATION)
+    const [startDate, setStartDate] = useState(null)
+    const [endDate, setEndDate] = useState(null)
+    const [searchGuests, setSearchGuests] = useState('1')
     const [priceFilter, setPriceFilter] = useState('all')
     const [locationFilter, setLocationFilter] = useState('all')
     const [bedsFilter, setBedsFilter] = useState('all')
@@ -78,22 +90,37 @@ function Hospedagem() {
     const [amenitiesFilter, setAmenitiesFilter] = useState('all')
     const [showFilters, setShowFilters] = useState(false)
     const [selectedAccommodation, setSelectedAccommodation] = useState(null)
+    const [reservationSearch, setReservationSearch] = useState(null)
     const [successMessage, setSuccessMessage] = useState('')
+
+    useEffect(() => {
+        const parsed = parseSearchFromUrl(searchParams)
+        setSearchTerm(parsed.searchTerm)
+        setSearchLocation(parsed.location)
+        setStartDate(parsed.startDate)
+        setEndDate(parsed.endDate)
+        setSearchGuests(parsed.guests)
+    }, [searchParams])
 
     useEffect(() => {
         let mounted = true
         setLoading(true)
 
-        api.listQuartos(tipoFilter !== 'all' ? tipoFilter : undefined)
-            .then((rooms) => {
+        Promise.all([
+            api.listQuartos(tipoFilter !== 'all' ? tipoFilter : undefined),
+            api.listAlugueis().catch(() => [])
+        ])
+            .then(([rooms, rentals]) => {
                 if (!mounted) return
                 const mapped = rooms?.length ? rooms.map(buildAccommodation) : fallbackAccommodations
                 setAccommodations(mapped)
+                setAlugueis(rentals || [])
                 setApiError('')
             })
             .catch((error) => {
                 if (!mounted) return
                 setAccommodations(fallbackAccommodations)
+                setAlugueis([])
                 setApiError(error.message)
             })
             .finally(() => {
@@ -107,6 +134,38 @@ function Hospedagem() {
 
     const openReservation = (item) => {
         setSelectedAccommodation({ ...item, name: item.name || item.title })
+        setReservationSearch({
+            checkIn: startDate,
+            checkOut: endDate,
+            guests: searchGuests
+        })
+    }
+
+    const handleSearch = (criteria) => {
+        setSearchTerm(criteria.searchTerm || '')
+        setSearchLocation(criteria.location || DEFAULT_LOCATION)
+        setStartDate(criteria.startDate || null)
+        setEndDate(criteria.endDate || null)
+        setSearchGuests(criteria.guests || '1')
+
+        const params = new URLSearchParams()
+        if (criteria.searchTerm?.trim()) params.set('q', criteria.searchTerm.trim())
+        if (criteria.location?.trim() && criteria.location.trim() !== DEFAULT_LOCATION) {
+            params.set('local', criteria.location.trim())
+        }
+        if (criteria.startDate) params.set('entrada', criteria.startDate.toISOString().slice(0, 10))
+        if (criteria.endDate) params.set('saida', criteria.endDate.toISOString().slice(0, 10))
+        if (criteria.guests) params.set('hospedes', String(criteria.guests))
+        if (searchParams.get('quarto')) params.set('quarto', searchParams.get('quarto'))
+
+        setSearchParams(params, { replace: true })
+        document.getElementById('acomodacoes')?.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    const handleDatesChange = (dates) => {
+        const [start, end] = dates
+        setStartDate(start)
+        setEndDate(end)
     }
 
     useLayoutEffect(() => {
@@ -126,14 +185,22 @@ function Hospedagem() {
         )
         if (found) {
             openReservation(found)
-            setSearchParams({}, { replace: true })
+            const params = new URLSearchParams(location.search)
+            params.delete('quarto')
+            setSearchParams(params, { replace: true })
         }
-    }, [location.state, searchParams, accommodations, loading, location.pathname, location.search, navigate, setSearchParams])
+    }, [location.state, searchParams, accommodations, loading, location.pathname, location.search, navigate, setSearchParams, startDate, endDate, searchGuests])
 
     const filteredLodgings = useMemo(() => {
-        return accommodations.filter((item) => {
-            const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.location.toLowerCase().includes(searchTerm.toLowerCase())
+        const searchMatches = filterAccommodations(accommodations, {
+            searchTerm,
+            location: searchLocation,
+            startDate,
+            endDate,
+            guests: searchGuests
+        }, alugueis)
+
+        return searchMatches.filter((item) => {
             const matchesPrice = priceFilter === 'all' ||
                 (priceFilter === 'budget' && item.price < 500) ||
                 (priceFilter === 'medium' && item.price >= 500 && item.price < 1000) ||
@@ -144,15 +211,15 @@ function Hospedagem() {
             const matchesTipo = tipoFilter === 'all' || item.tipo === tipoFilter
             const matchesAmenities = amenitiesFilter === 'all' || item.amenities.includes(amenitiesFilter)
 
-            return matchesSearch && matchesPrice && matchesLocation && matchesBeds && matchesTipo && matchesAmenities
+            return matchesPrice && matchesLocation && matchesBeds && matchesTipo && matchesAmenities
         })
-    }, [accommodations, amenitiesFilter, bedsFilter, locationFilter, priceFilter, searchTerm, tipoFilter])
+    }, [accommodations, alugueis, amenitiesFilter, bedsFilter, endDate, locationFilter, priceFilter, searchGuests, searchLocation, searchTerm, startDate, tipoFilter])
 
     const locations = [...new Set(accommodations.map((item) => item.location))]
     const allAmenities = [...new Set(accommodations.flatMap((item) => item.amenities))]
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-amber-400 selection:text-black antialiased">
+        <div className={t.page}>
             <header className="relative pt-40 pb-24 lg:pt-56 lg:pb-40 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
                     <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full" />
@@ -168,7 +235,7 @@ function Hospedagem() {
                         <h1 className="text-6xl lg:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
                             Encontre a melhor <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-600">hospedagem</span> para sua viagem.
                         </h1>
-                        <p className="text-lg lg:text-xl text-gray-400 leading-relaxed max-w-xl font-medium mb-12">
+                        <p className={`text-lg lg:text-xl ${t.muted} leading-relaxed max-w-xl font-medium mb-12`}>
                             Explore quartos individuais, duplos e familia com calculo real de diaria pelo backend.
                         </p>
                         <button
@@ -181,24 +248,35 @@ function Hospedagem() {
 
                     <div className="grid grid-cols-2 gap-4 relative">
                         <div className="space-y-4 pt-12">
-                            <img src="/img/praia_de_taipu_de_fora.jpg" className="rounded-[2.5rem] h-80 w-full object-cover border border-white/10 shadow-2xl" alt="Taipu de Fora" />
-                            <img src="/img/praia_do_cassange.jpg" className="rounded-[2.5rem] h-56 w-full object-cover border border-white/10 shadow-2xl" alt="Cassange" />
+                            <img src="/img/praia_de_taipu_de_fora.jpg" className={`rounded-[2.5rem] h-80 w-full object-cover ${t.imageBorder}`} alt="Taipu de Fora" />
+                            <img src="/img/praia_do_cassange.jpg" className={`rounded-[2.5rem] h-56 w-full object-cover ${t.imageBorder}`} alt="Cassange" />
                         </div>
                         <div className="space-y-4">
-                            <img src="/img/praia-do-muta.jpg" className="rounded-[2.5rem] h-56 w-full object-cover border border-white/10 shadow-2xl" alt="Muta" />
-                            <img src="/img/praia_de_tres_coqueiros.jpg" className="rounded-[2.5rem] h-80 w-full object-cover border border-white/10 shadow-2xl" alt="Tres Coqueiros" />
+                            <img src="/img/praia-do-muta.jpg" className={`rounded-[2.5rem] h-56 w-full object-cover ${t.imageBorder}`} alt="Muta" />
+                            <img src="/img/praia_de_tres_coqueiros.jpg" className={`rounded-[2.5rem] h-80 w-full object-cover ${t.imageBorder}`} alt="Tres Coqueiros" />
                         </div>
                     </div>
                 </div>
             </header>
 
-            <Searchbar />
+            <Searchbar
+                location={searchLocation}
+                onLocationChange={(e) => setSearchLocation(e.target.value)}
+                startDate={startDate}
+                endDate={endDate}
+                onDatesChange={handleDatesChange}
+                guests={searchGuests}
+                onGuestsChange={(e) => setSearchGuests(e.target.value)}
+                searchTerm={searchTerm}
+                onSearchTermChange={setSearchTerm}
+                onSearch={handleSearch}
+            />
 
             <main id="acomodacoes" className="max-w-7xl mx-auto px-6 py-32">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div className="max-w-xl">
                         <h2 className="text-4xl font-black mb-4 tracking-tighter">Acomodacoes Disponiveis</h2>
-                        <p className="text-gray-500 font-medium">Escolha uma acomodacao cadastrada e confirme a reserva como cliente.</p>
+                        <p className={`${t.mutedSoft} font-medium`}>Escolha uma acomodacao cadastrada e confirme a reserva como cliente.</p>
                     </div>
                     <span className="text-amber-400 font-black text-xs uppercase tracking-widest border-b-2 border-amber-400 pb-1">
                         {loading ? 'Carregando...' : `${filteredLodgings.length} resultado(s)`}
@@ -206,8 +284,17 @@ function Hospedagem() {
                 </div>
 
                 {apiError && (
-                    <div className="mb-8 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
+                    <div className={`mb-8 rounded-2xl p-4 text-sm ${t.apiWarning}`}>
                         Backend indisponivel agora. Mostrando exemplos locais.
+                    </div>
+                )}
+
+                {(searchTerm || startDate || endDate || searchGuests !== '1') && (
+                    <div className={`mb-8 rounded-2xl p-4 text-sm ${t.infoBanner}`}>
+                        Buscando estadias
+                        {searchTerm ? ` para "${searchTerm}"` : ''}
+                        {startDate && endDate ? ` de ${startDate.toLocaleDateString('pt-BR')} ate ${endDate.toLocaleDateString('pt-BR')}` : ''}
+                        {searchGuests !== '1' ? ` para ${searchGuests} hospede(s)` : ''}.
                     </div>
                 )}
 
@@ -218,11 +305,11 @@ function Hospedagem() {
                             placeholder="Buscar por nome ou localizacao..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="flex-1 min-w-64 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors"
+                            className={`flex-1 min-w-64 px-4 py-3 rounded-lg outline-none transition-colors ${t.filterInput}`}
                         />
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors flex items-center gap-2"
+                            className={`px-4 py-3 rounded-lg transition-colors flex items-center gap-2 ${t.filterInput}`}
                         >
                             <Filter size={20} />
                             Filtros
@@ -231,7 +318,7 @@ function Hospedagem() {
                     </div>
 
                     {showFilters && (
-                        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10 grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div className={`rounded-lg p-6 grid grid-cols-1 md:grid-cols-5 gap-4 ${t.filterPanel}`}>
                             <FilterSelect label="Tipo de Quarto" value={tipoFilter} onChange={setTipoFilter} options={
                                 ROOM_TYPE_OPTIONS.map(({ value, label }) => [value, label])
                             } />
@@ -266,12 +353,12 @@ function Hospedagem() {
                                 key={item.id}
                                 type="button"
                                 onClick={() => openReservation(item)}
-                                className="group rounded-2xl overflow-hidden border border-white/10 bg-white/5 hover:border-amber-400 hover:bg-white/10 transition-all duration-300 text-left"
+                                className={`group rounded-2xl overflow-hidden transition-all duration-300 text-left ${t.listingCard}`}
                             >
                                 <div className="relative h-56 overflow-hidden">
                                     <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                    <div className="absolute bottom-3 left-3 bg-black/70 rounded-lg px-3 py-1 flex items-center gap-1">
+                                    <div className={`absolute bottom-3 left-3 rounded-lg px-3 py-1 flex items-center gap-1 ${t.badge}`}>
                                         <Star size={16} className="text-amber-400 fill-amber-400" />
                                         <span className="font-bold text-sm">{item.rating}</span>
                                     </div>
@@ -279,21 +366,21 @@ function Hospedagem() {
 
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold text-amber-400 mb-2 group-hover:text-amber-300 transition-colors">{item.title}</h3>
-                                    <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+                                    <div className={`flex items-center gap-2 text-sm mb-4 ${t.listingMeta}`}>
                                         <MapPin size={16} />
                                         {item.location}
                                     </div>
-                                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">{item.description}</p>
+                                    <p className={`text-sm mb-4 line-clamp-2 ${t.listingDesc}`}>{item.description}</p>
                                     <div className="flex flex-wrap gap-2 mb-4">
                                         <Badge icon={Bed}>{item.beds}</Badge>
                                         <Badge icon={Bath}>{item.bathrooms}</Badge>
                                         <Badge icon={Users}>Ate {item.maxGuests}</Badge>
                                     </div>
-                                    <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                                    <div className={`pt-4 border-t flex justify-between items-center ${t.listingDivider}`}>
                                         <div className="flex items-center gap-1">
                                             <DollarSign size={20} className="text-amber-400" />
-                                            <span className="text-2xl font-bold">R$ {item.price.toLocaleString('pt-BR')}</span>
-                                            <span className="text-gray-400 text-sm">/noite</span>
+                                            <span className={`text-2xl font-bold ${t.heading}`}>R$ {item.price.toLocaleString('pt-BR')}</span>
+                                            <span className={`${t.listingMeta} text-sm`}>/noite</span>
                                         </div>
                                         <span className="px-4 py-2 bg-amber-400 text-black font-bold rounded-lg">Reservar</span>
                                     </div>
@@ -303,8 +390,8 @@ function Hospedagem() {
                     </div>
                 ) : (
                     <div className="text-center py-16">
-                        <AlertCircle size={48} className="text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-400 text-lg">Nenhuma acomodacao encontrada com os filtros selecionados.</p>
+                        <AlertCircle size={48} className={`${t.emptyIcon} mx-auto mb-4`} />
+                        <p className={`${t.muted} text-lg`}>Nenhuma acomodacao encontrada com os filtros selecionados.</p>
                     </div>
                 )}
             </main>
@@ -316,10 +403,14 @@ function Hospedagem() {
                 </div>
             )}
 
-            {selectedAccommodation && (
+                {selectedAccommodation && (
                 <ReservationModal
                     accommodation={selectedAccommodation}
-                    onClose={() => setSelectedAccommodation(null)}
+                    initialSearch={reservationSearch}
+                    onClose={() => {
+                        setSelectedAccommodation(null)
+                        setReservationSearch(null)
+                    }}
                     onSuccess={(reserva) => {
                         const total = Number(reserva.valorFinal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
                         setSuccessMessage(`Reserva confirmada. Total: R$ ${total}`)
@@ -331,16 +422,17 @@ function Hospedagem() {
 }
 
 function FilterSelect({ label, value, onChange, options }) {
+    const t = usePublicTheme()
     return (
         <div>
             <label className="block text-sm font-semibold text-amber-400 uppercase tracking-wide mb-2">{label}</label>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors"
+                className={`w-full px-3 py-2 rounded-lg focus:outline-none focus:border-amber-400 transition-colors ${t.filterSelect}`}
             >
                 {options.map(([optionValue, optionLabel]) => (
-                    <option key={optionValue} value={optionValue} style={{ background: '#1a1a1a', color: 'white' }}>
+                    <option key={optionValue} value={optionValue} className={t.selectOption}>
                         {optionLabel}
                     </option>
                 ))}
@@ -350,8 +442,9 @@ function FilterSelect({ label, value, onChange, options }) {
 }
 
 function Badge({ icon: Icon, children }) {
+    const t = usePublicTheme()
     return (
-        <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-xs">
+        <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${t.metaChip}`}>
             <Icon size={14} className="text-amber-400" />
             {children}
         </div>

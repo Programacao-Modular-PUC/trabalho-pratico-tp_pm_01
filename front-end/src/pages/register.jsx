@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { UserPlus, Mail, ArrowRight, Phone, MapPin, IdCard } from 'lucide-react'
+import { UserPlus, Mail, ArrowRight, ArrowLeft, Phone, MapPin, IdCard } from 'lucide-react'
 import { api } from '../services/api'
 import { saveSession } from '../services/auth'
 
@@ -51,6 +51,14 @@ function Register() {
                 </div>
             </div>
 
+            <Link
+                to="/"
+                className="absolute top-6 left-6 z-10 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0d0d0f]/80 px-4 py-2 text-sm font-bold text-gray-300 transition hover:border-amber-400/40 hover:text-amber-400"
+            >
+                <ArrowLeft size={16} />
+                Voltar para a tela inicial
+            </Link>
+
             <div className="min-h-screen flex items-center justify-center px-6 py-24">
                 <div className="w-full max-w-6xl grid gap-12 lg:grid-cols-[1.3fr_1fr] items-center">
                     <div>
@@ -81,9 +89,14 @@ function Register() {
                             )}
 
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-2">
-                                <Link to="/login" className="font-bold text-amber-400 hover:text-amber-300">
-                                    Ja tenho login
-                                </Link>
+                                <div className="flex flex-col gap-2">
+                                    <Link to="/login" className="font-bold text-amber-400 hover:text-amber-300">
+                                        Ja tenho login
+                                    </Link>
+                                    <Link to="/" className="text-sm text-gray-400 font-semibold hover:text-white">
+                                        Voltar para a tela inicial
+                                    </Link>
+                                </div>
                                 <button
                                     type="submit"
                                     disabled={loading}

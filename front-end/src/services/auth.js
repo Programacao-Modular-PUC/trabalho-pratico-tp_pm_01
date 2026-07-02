@@ -21,6 +21,8 @@ export function getLoggedCliente() {
     return session?.role === 'guest' ? session.cliente : null
 }
 
+export { TEST_GUEST, TEST_GUEST_CLIENTE, TEST_HOST, TEST_OTHER_CLIENTS } from './mockData'
+
 export const HOST_TEST_EMAIL = 'acessohost@gmail.com'
 export const GUEST_TEST_EMAIL = 'acessoguest@gmail.com'
 

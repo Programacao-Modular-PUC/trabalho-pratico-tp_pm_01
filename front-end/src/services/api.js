@@ -1,3 +1,13 @@
+import {
+    getMockNotificacoes,
+    MOCK_RELATORIO_CLIENTES_FREQUENTES,
+    MOCK_RELATORIO_FATURAMENTO,
+    MOCK_RELATORIO_HISTORICO,
+    MOCK_RELATORIO_QUARTOS_MAIS_ALUGADOS,
+    MOCK_RELATORIO_RECEITA_POR_TIPO,
+    MOCK_RELATORIO_TAXA_OCUPACAO
+} from './mockData'
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081'
 
 async function request(path, options = {}) {
@@ -37,6 +47,18 @@ function unwrapRelatorio(data) {
         return data.dados
     }
     return data ?? []
+}
+
+async function withMockFallback(fetcher, fallback, { useWhenEmpty = false } = {}) {
+    try {
+        const data = await fetcher()
+        if (useWhenEmpty && Array.isArray(data) && data.length === 0) {
+            return { data: fallback(), demo: true }
+        }
+        return { data, demo: false }
+    } catch {
+        return { data: fallback(), demo: true }
+    }
 }
 
 export const api = {
@@ -83,37 +105,69 @@ export const api = {
     checkOutAluguel: (id) => request(`/alugueis/${id}/check-out`, { method: 'POST' }),
     confirmarPagamentoAluguel: (id) => request(`/alugueis/${id}/confirmar-pagamento`, { method: 'POST' }),
 
-    listNotificacoes: () => request('/notificacoes'),
+    listNotificacoes: async () => {
+        const { data } = await withMockFallback(
+            () => request('/notificacoes'),
+            getMockNotificacoes,
+            { useWhenEmpty: true }
+        )
+        return data
+    },
     listNotificacoesPorEvento: (tipo) => request(`/notificacoes/evento/${tipo}`),
 
     getRelatorioFaturamentoMensal: async (ano) => {
-        const q = ano ? `?ano=${ano}` : '';
-        return unwrapRelatorio(await request(`/relatorios/faturamento-mensal${q}`));
+        const q = ano ? `?ano=${ano}` : ''
+        const { data } = await withMockFallback(
+            async () => unwrapRelatorio(await request(`/relatorios/faturamento-mensal${q}`)),
+            () => MOCK_RELATORIO_FATURAMENTO.filter((item) => !ano || item.ano === Number(ano))
+        )
+        return data
     },
     getRelatorioTaxaOcupacao: async (dataInicio, dataFim) => {
-        const p = new URLSearchParams();
-        if (dataInicio) p.set('dataInicio', dataInicio);
-        if (dataFim) p.set('dataFim', dataFim);
-        const q = p.toString();
-        return unwrapRelatorio(await request(`/relatorios/taxa-ocupacao${q ? `?${q}` : ''}`));
+        const p = new URLSearchParams()
+        if (dataInicio) p.set('dataInicio', dataInicio)
+        if (dataFim) p.set('dataFim', dataFim)
+        const q = p.toString()
+        const { data } = await withMockFallback(
+            async () => unwrapRelatorio(await request(`/relatorios/taxa-ocupacao${q ? `?${q}` : ''}`)),
+            () => MOCK_RELATORIO_TAXA_OCUPACAO
+        )
+        return data
     },
     getRelatorioClientesFrequentes: async (limite) => {
-        const q = limite ? `?limite=${limite}` : '';
-        return unwrapRelatorio(await request(`/relatorios/clientes-frequentes${q}`));
+        const q = limite ? `?limite=${limite}` : ''
+        const { data } = await withMockFallback(
+            async () => unwrapRelatorio(await request(`/relatorios/clientes-frequentes${q}`)),
+            () => (limite ? MOCK_RELATORIO_CLIENTES_FREQUENTES.slice(0, limite) : MOCK_RELATORIO_CLIENTES_FREQUENTES)
+        )
+        return data
     },
     getRelatorioQuartosMaisAlugados: async (limite) => {
-        const q = limite ? `?limite=${limite}` : '';
-        return unwrapRelatorio(await request(`/relatorios/quartos-mais-alugados${q}`));
+        const q = limite ? `?limite=${limite}` : ''
+        const { data } = await withMockFallback(
+            async () => unwrapRelatorio(await request(`/relatorios/quartos-mais-alugados${q}`)),
+            () => (limite ? MOCK_RELATORIO_QUARTOS_MAIS_ALUGADOS.slice(0, limite) : MOCK_RELATORIO_QUARTOS_MAIS_ALUGADOS)
+        )
+        return data
     },
-    getRelatorioReceitaPorTipoQuarto: async () =>
-        unwrapRelatorio(await request('/relatorios/receita-por-tipo-quarto')),
+    getRelatorioReceitaPorTipoQuarto: async () => {
+        const { data } = await withMockFallback(
+            async () => unwrapRelatorio(await request('/relatorios/receita-por-tipo-quarto')),
+            () => MOCK_RELATORIO_RECEITA_POR_TIPO
+        )
+        return data
+    },
     getRelatorioHistoricoReservas: async ({ dataInicio, dataFim, clienteId, quartoId } = {}) => {
-        const p = new URLSearchParams();
-        if (dataInicio) p.set('dataInicio', dataInicio);
-        if (dataFim) p.set('dataFim', dataFim);
-        if (clienteId) p.set('clienteId', clienteId);
-        if (quartoId) p.set('quartoId', quartoId);
-        const q = p.toString();
-        return unwrapRelatorio(await request(`/relatorios/historico-reservas${q ? `?${q}` : ''}`));
+        const p = new URLSearchParams()
+        if (dataInicio) p.set('dataInicio', dataInicio)
+        if (dataFim) p.set('dataFim', dataFim)
+        if (clienteId) p.set('clienteId', clienteId)
+        if (quartoId) p.set('quartoId', quartoId)
+        const q = p.toString()
+        const { data } = await withMockFallback(
+            async () => unwrapRelatorio(await request(`/relatorios/historico-reservas${q ? `?${q}` : ''}`)),
+            () => MOCK_RELATORIO_HISTORICO
+        )
+        return data
     },
 }

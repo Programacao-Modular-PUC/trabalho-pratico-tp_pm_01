@@ -23,12 +23,12 @@ function tomorrow() {
     return date
 }
 
-function ReservationModal({ accommodation, onClose, onSuccess }) {
+function ReservationModal({ accommodation, onClose, onSuccess, initialSearch }) {
     const navigate = useNavigate()
     const [reservationData, setReservationData] = useState({
-        checkIn: null,
-        checkOut: null,
-        guests: '1',
+        checkIn: initialSearch?.checkIn || null,
+        checkOut: initialSearch?.checkOut || null,
+        guests: String(initialSearch?.guests || '1'),
         specialRequests: '',
         cribRequested: false
     })
@@ -41,6 +41,16 @@ function ReservationModal({ accommodation, onClose, onSuccess }) {
             document.body.style.overflow = ''
         }
     }, [])
+
+    useEffect(() => {
+        if (!initialSearch) return
+        setReservationData((current) => ({
+            ...current,
+            checkIn: initialSearch.checkIn || current.checkIn,
+            checkOut: initialSearch.checkOut || current.checkOut,
+            guests: String(initialSearch.guests || current.guests)
+        }))
+    }, [initialSearch])
 
     if (!accommodation) return null
 

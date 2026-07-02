@@ -21,9 +21,9 @@ const TIPO_QUARTO_LABELS = {
 };
 
 const STATUS_COLORS = {
-    RESERVADA: 'bg-blue-500/20 text-blue-300',
-    EM_ANDAMENTO: 'bg-amber-500/20 text-amber-300',
-    FINALIZADA: 'bg-green-500/20 text-green-300',
+    RESERVADA: 'bg-blue-100 text-blue-800',
+    EM_ANDAMENTO: 'bg-amber-100 text-amber-800',
+    FINALIZADA: 'bg-emerald-100 text-emerald-800',
 };
 
 const STATUS_LABELS = {
@@ -35,20 +35,20 @@ const STATUS_LABELS = {
 function LoadingSpinner() {
     return (
         <div className="flex items-center justify-center py-16">
-            <RefreshCw className="w-8 h-8 text-amber-400 animate-spin" />
+            <RefreshCw className="w-8 h-8 text-amber-500 animate-spin" />
         </div>
     );
 }
 
 function EmptyState({ message = 'Nenhum dado encontrado.' }) {
     return (
-        <div className="text-center py-16 text-gray-500">{message}</div>
+        <div className="text-center py-16 text-slate-500">{message}</div>
     );
 }
 
 function TableWrapper({ children }) {
     return (
-        <div className="overflow-x-auto rounded-xl border border-slate-700/50">
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-sm">{children}</table>
         </div>
     );
@@ -56,7 +56,7 @@ function TableWrapper({ children }) {
 
 function Th({ children }) {
     return (
-        <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-800/50 first:rounded-tl-xl last:rounded-tr-xl">
+        <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-50 first:rounded-tl-xl last:rounded-tr-xl">
             {children}
         </th>
     );
@@ -64,7 +64,7 @@ function Th({ children }) {
 
 function Td({ children, className = '' }) {
     return (
-        <td className={`px-4 py-3 text-gray-300 border-t border-slate-700/30 ${className}`}>
+        <td className={`px-4 py-3 text-slate-700 border-t border-slate-100 ${className}`}>
             {children}
         </td>
     );
@@ -643,15 +643,14 @@ function Relatorios() {
     const ActiveSection = current?.component;
 
     return (
-        <div className="bg-gradient-to-br from-slate-900 via-black to-slate-900 min-h-full pt-8 pb-12">
-            <div className="max-w-7xl mx-auto px-6">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-black text-white mb-2">Relatórios Gerenciais</h1>
-                    <p className="text-gray-400">Acompanhe o desempenho do negócio com dados em tempo real</p>
+        <div className="p-6">
+            <div className="max-w-7xl mx-auto">
+                <div className="mb-8 rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">Relatorios gerenciais</p>
+                    <h1 className="mt-3 text-3xl font-black text-slate-900 mb-2">Desempenho do negocio</h1>
+                    <p className="text-slate-600">Dados carregados da API. Se o backend estiver indisponivel, exibimos relatorios de demonstracao alinhados ao seed de teste.</p>
                 </div>
 
-                {/* Tabs */}
                 <div className="flex gap-2 overflow-x-auto pb-1 mb-8 scrollbar-hide">
                     {TABS.map((tab) => {
                         const Icon = tab.icon;
@@ -662,8 +661,8 @@ function Relatorios() {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
                                     isActive
-                                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-lg shadow-amber-500/30'
-                                        : 'bg-slate-800/50 border border-slate-700/50 text-gray-400 hover:text-white hover:bg-slate-800'
+                                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md shadow-amber-500/20'
+                                        : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                 }`}
                             >
                                 <Icon className="w-4 h-4" />
@@ -673,10 +672,9 @@ function Relatorios() {
                     })}
                 </div>
 
-                {/* Content card */}
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl p-6">
-                    <h2 className="text-xl font-black text-white mb-6 flex items-center gap-2">
-                        {current && <current.icon className="w-5 h-5 text-amber-400" />}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                        {current && <current.icon className="w-5 h-5 text-amber-600" />}
                         {current?.label}
                     </h2>
                     {ActiveSection && <ActiveSection />}

@@ -1,170 +1,181 @@
-import React, { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react'
 import {
     DollarSign,
     Calendar,
     Users,
-    TrendingUp,
-    BarChart3,
-    Star,
-    Eye
-} from 'lucide-react';
+    Home,
+    AlertCircle,
+    RefreshCw,
+    BarChart3
+} from 'lucide-react'
+import { api } from '../../../services/api'
+import { ensureHostSession, filterHostResidences, getHostEmail } from '../../../services/auth'
 
 function Dashboard() {
-    const [stats] = useState({
-        totalRevenue: 15250.00,
-        monthRevenue: 3500.00,
-        occupancyRate: 75,
-        totalGuests: 45,
-        activeListings: 3,
-        upcomingReservations: 4
-    });
+    const [bookings, setBookings] = useState([])
+    const [residences, setResidences] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
 
-    const [recentStays] = useState([
-        {
-            id: 1,
-            guestName: 'Lucas Ferreira',
-            residence: 'Casa à Beira-Mar Premium',
-            checkIn: '2025-04-10',
-            checkOut: '2025-04-15',
-            rating: 5,
-            revenue: 2700.00
-        },
-        {
-            id: 2,
-            guestName: 'Carla Mendes',
-            residence: 'Chalé Aconchegante na Serra',
-            checkIn: '2025-04-05',
-            checkOut: '2025-04-08',
-            rating: 4.5,
-            revenue: 840.00
-        },
-        {
-            id: 3,
-            guestName: 'Roberto Gomes',
-            residence: 'Apartamento Centro Histórico',
-            checkIn: '2025-03-28',
-            checkOut: '2025-03-31',
-            rating: 4,
-            revenue: 450.00
+    const loadDashboard = async () => {
+        setLoading(true)
+        setError('')
+        try {
+            ensureHostSession()
+            const email = getHostEmail()
+            const [alugueis, residencias] = await Promise.all([
+                api.listAlugueis(),
+                api.listResidencias()
+            ])
+            const hostResidences = filterHostResidences(residencias, email)
+            const hostResidenceIds = new Set(hostResidences.map((item) => item.id))
+            setResidences(hostResidences)
+            setBookings(alugueis.filter((item) => hostResidenceIds.has(item.residenciaId)))
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
         }
-    ]);
+    }
 
-    const formatCurrency = (value) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        }).format(value);
-    };
+    useEffect(() => {
+        loadDashboard()
+    }, [])
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('pt-BR');
-    };
+    const stats = useMemo(() => {
+        const finalized = bookings.filter((item) => item.status === 'FINALIZADA')
+        const reserved = bookings.filter((item) => item.status === 'RESERVADA')
+        const active = bookings.filter((item) => item.status === 'EM_ANDAMENTO')
+        const totalRevenue = finalized.reduce((sum, item) => sum + Number(item.valorFinal || 0), 0)
+        const monthRevenue = finalized
+            .filter((item) => {
+                const date = new Date(item.dataSaida)
+                const now = new Date()
+                return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+            })
+            .reduce((sum, item) => sum + Number(item.valorFinal || 0), 0)
+        const totalGuests = bookings.reduce((sum, item) => sum + Number(item.quantidadeHospedes || 0), 0)
+
+        return {
+            totalRevenue,
+            monthRevenue,
+            occupancyRate: bookings.length > 0
+                ? Math.round(((finalized.length + active.length) / bookings.length) * 100)
+                : 0,
+            totalGuests,
+            activeListings: residences.length,
+            upcomingReservations: reserved.length
+        }
+    }, [bookings, residences])
+
+    const recentStays = useMemo(() => {
+        return [...bookings]
+            .sort((a, b) => new Date(b.dataEntrada) - new Date(a.dataEntrada))
+            .slice(0, 6)
+    }, [bookings])
+
+    const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value)
+
+    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('pt-BR')
 
     return (
-        <div className="bg-gradient-to-br from-slate-900 via-black to-slate-900 pt-8 pb-12">
-            <div className="max-w-7xl mx-auto px-6">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-black text-white mb-2">Bem-vindo ao Dashboard</h1>
-                    <p className="text-gray-400">Aqui você pode acompanhar suas estatísticas e performance</p>
-                </div>
-
-                {/* Stats Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {/* Total Revenue */}
-                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl p-6 hover:border-amber-500/30 transition-all group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/20 p-3 rounded-xl group-hover:from-amber-500/30 group-hover:to-amber-600/30 transition-all">
-                                <DollarSign className="w-6 h-6 text-amber-400" />
-                            </div>
-                            <TrendingUp className="w-5 h-5 text-green-400" />
-                        </div>
-                        <p className="text-gray-400 text-sm mb-1">Receita Total</p>
-                        <h3 className="text-3xl font-black text-white mb-2">{formatCurrency(stats.totalRevenue)}</h3>
-                        <p className="text-xs text-green-400">+12% este mês</p>
+        <div className="p-6">
+            <div className="mb-8 rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">Dashboard</p>
+                        <h1 className="mt-3 text-3xl font-black text-slate-900">Visao geral do anfitriao</h1>
+                        <p className="mt-2 max-w-2xl text-slate-600">
+                            Reservas, receita e ocupacao carregadas diretamente da API — mesmas bases usadas em Relatorios e Agendamentos.
+                        </p>
                     </div>
-
-                    {/* Monthly Revenue */}
-                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/30 transition-all group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-3 rounded-xl group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
-                                <Calendar className="w-6 h-6 text-blue-400" />
-                            </div>
-                            <TrendingUp className="w-5 h-5 text-green-400" />
-                        </div>
-                        <p className="text-gray-400 text-sm mb-1">Receita este Mês</p>
-                        <h3 className="text-3xl font-black text-white mb-2">{formatCurrency(stats.monthRevenue)}</h3>
-                        <p className="text-xs text-green-400">+8% semana passada</p>
-                    </div>
-
-                    {/* Occupancy Rate */}
-                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl p-6 hover:border-purple-500/30 transition-all group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-3 rounded-xl group-hover:from-purple-500/30 group-hover:to-purple-600/30 transition-all">
-                                <BarChart3 className="w-6 h-6 text-purple-400" />
-                            </div>
-                            <span className="text-xl font-bold text-purple-400">{stats.occupancyRate}%</span>
-                        </div>
-                        <p className="text-gray-400 text-sm mb-1">Taxa de Ocupação</p>
-                        <div className="w-full bg-slate-700/50 rounded-full h-2 mb-2">
-                            <div
-                                className="bg-gradient-to-r from-purple-500 to-purple-400 h-2 rounded-full transition-all"
-                                style={{ width: `${stats.occupancyRate}%` }}
-                            />
-                        </div>
-                        <p className="text-xs text-gray-500">Bem acima da média</p>
-                    </div>
-
-                    {/* Total Guests */}
-                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl p-6 hover:border-pink-500/30 transition-all group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="bg-gradient-to-br from-pink-500/20 to-pink-600/20 p-3 rounded-xl group-hover:from-pink-500/30 group-hover:to-pink-600/30 transition-all">
-                                <Users className="w-6 h-6 text-pink-400" />
-                            </div>
-                            <TrendingUp className="w-5 h-5 text-green-400" />
-                        </div>
-                        <p className="text-gray-400 text-sm mb-1">Total de Hóspedes</p>
-                        <h3 className="text-3xl font-black text-white mb-2">{stats.totalGuests}</h3>
-                        <p className="text-xs text-green-400">+5 este mês</p>
-                    </div>
-                </div>
-
-                {/* Recent Stays */}
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl p-6">
-                    <h2 className="text-2xl font-black text-white mb-6">Estadias Recentes</h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {recentStays.map((stay) => (
-                            <div
-                                key={stay.id}
-                                className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/30 transition-all"
-                            >
-                                <p className="font-bold text-white mb-1">{stay.guestName}</p>
-                                <p className="text-sm text-gray-400 mb-3">{stay.residence}</p>
-                                <p className="text-xs text-gray-500 mb-4">
-                                    {formatDate(stay.checkIn)} - {formatDate(stay.checkOut)}
-                                </p>
-
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
-                                    <div className="flex items-center gap-1">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-3 h-3 ${
-                                                    i < stay.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                    <p className="font-bold text-amber-400">{formatCurrency(stay.revenue)}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <button
+                        onClick={loadDashboard}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                        <RefreshCw size={16} />
+                        Atualizar
+                    </button>
                 </div>
             </div>
+
+            {error && (
+                <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700 flex gap-3">
+                    <AlertCircle className="shrink-0" />
+                    {error}
+                </div>
+            )}
+
+            {loading ? (
+                <div className="rounded-3xl bg-white border border-slate-200 p-12 text-center text-slate-600 shadow-sm">
+                    Carregando dados do painel...
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <StatCard icon={DollarSign} label="Receita total" value={formatCurrency(stats.totalRevenue)} hint="Reservas finalizadas" />
+                        <StatCard icon={Calendar} label="Receita do mes" value={formatCurrency(stats.monthRevenue)} hint="Saidas no mes atual" />
+                        <StatCard icon={BarChart3} label="Taxa de ocupacao" value={`${stats.occupancyRate}%`} hint="Finalizadas + em andamento" />
+                        <StatCard icon={Users} label="Hospedes atendidos" value={stats.totalGuests} hint={`${stats.upcomingReservations} reserva(s) futura(s)`} />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Home className="text-amber-600" size={20} />
+                                <h2 className="font-bold text-slate-900">Minhas residencias</h2>
+                            </div>
+                            <p className="text-3xl font-black text-slate-900">{stats.activeListings}</p>
+                            <ul className="mt-4 space-y-2 text-sm text-slate-600">
+                                {residences.slice(0, 3).map((item) => (
+                                    <li key={item.id}>{item.endereco} — {item.bairro}</li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="text-xl font-black text-slate-900 mb-4">Reservas recentes</h2>
+                            {recentStays.length === 0 ? (
+                                <p className="text-slate-600">Nenhuma reserva encontrada para suas propriedades.</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {recentStays.map((stay) => (
+                                        <div key={stay.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                            <div>
+                                                <p className="font-semibold text-slate-900">{stay.nomeCliente}</p>
+                                                <p className="text-sm text-slate-600">Quarto {stay.codigoQuarto} — {stay.enderecoResidencia || 'Residencia'}</p>
+                                                <p className="text-xs text-slate-500">{formatDate(stay.dataEntrada)} - {formatDate(stay.dataSaida)}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">{stay.status}</span>
+                                                <p className="mt-2 font-bold text-slate-900">{formatCurrency(stay.valorFinal)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
-    );
+    )
 }
 
-export default Dashboard;
+function StatCard({ icon: Icon, label, value, hint }) {
+    return (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 inline-flex rounded-xl bg-amber-100 p-3 text-amber-700">
+                <Icon size={22} />
+            </div>
+            <p className="text-sm text-slate-600">{label}</p>
+            <h3 className="mt-1 text-2xl font-black text-slate-900">{value}</h3>
+            <p className="mt-2 text-xs text-slate-500">{hint}</p>
+        </div>
+    )
+}
+
+export default Dashboard

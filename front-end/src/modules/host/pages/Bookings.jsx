@@ -50,31 +50,34 @@ function Bookings() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-slate-200 p-4 md:p-8">
+        <div className="min-h-screen p-4 md:p-6">
             <div className="max-w-6xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-white tracking-tight">Painel de Reservas</h1>
-                        <p className="text-slate-400">Reservas das propriedades de {hostEmail || 'sua conta'}</p>
-                    </div>
+                <div className="mb-8 rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">Agendamentos</p>
+                            <h1 className="mt-3 text-3xl font-black text-slate-900">Painel de Reservas</h1>
+                            <p className="mt-2 text-slate-600">Reservas das propriedades de {hostEmail || 'sua conta'} — dados da API.</p>
+                        </div>
                     <button
                         onClick={loadBookings}
-                        className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-xl font-bold transition flex items-center gap-2"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                     >
                         <RefreshCw size={18} />
                         Atualizar
                     </button>
+                    </div>
                 </div>
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex gap-3 text-red-300 mb-6">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex gap-3 text-red-700 mb-6">
                         <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <span>{error}</span>
                     </div>
                 )}
 
                 {successMessage && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-emerald-200 mb-6">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-800 mb-6">
                         {successMessage}
                     </div>
                 )}
@@ -92,12 +95,12 @@ function Bookings() {
                 ) : (
                     <div className="grid gap-4">
                         {bookings.map((booking) => (
-                            <div key={booking.id} className="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:bg-slate-800/60 transition">
+                            <div key={booking.id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-300 transition shadow-sm">
                                 <div className="flex flex-col lg:flex-row justify-between gap-6">
                                     <div className="space-y-1">
                                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Hospede</span>
-                                        <h3 className="text-lg font-bold text-white">{booking.nomeCliente}</h3>
-                                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                                        <h3 className="text-lg font-bold text-slate-900">{booking.nomeCliente}</h3>
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
                                             <MapPin size={14} /> {booking.enderecoResidencia}
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -112,7 +115,7 @@ function Bookings() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setSelectedReceipt(booking)}
-                                                className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition"
+                                                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition"
                                             >
                                                 <FileText size={14} /> Recibo
                                             </button>
@@ -181,9 +184,9 @@ function Bookings() {
     )
 }
 
-function StatusCard({ title, value, icon, color = 'text-white' }) {
+function StatusCard({ title, value, icon, color = 'text-slate-900' }) {
     return (
-        <div className="bg-slate-800/30 border border-slate-700/50 p-6 rounded-2xl">
+        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
             <div className="flex justify-between items-center mb-2">
                 <span className="text-slate-500 text-xs font-bold uppercase">{title}</span>
                 {icon}
@@ -197,7 +200,7 @@ function Info({ label, value, highlight }) {
     return (
         <div>
             <span className="text-[10px] uppercase text-slate-500 font-bold">{label}</span>
-            <p className={`text-sm font-bold ${highlight ? 'text-amber-500' : 'text-slate-200'}`}>{value}</p>
+            <p className={`text-sm font-bold ${highlight ? 'text-amber-600' : 'text-slate-800'}`}>{value}</p>
         </div>
     )
 }
@@ -213,8 +216,8 @@ function ReceiptInfo({ label, value }) {
 
 function EmptyState({ text }) {
     return (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-10 text-center text-slate-400">
-            <AlertCircle className="w-10 h-10 mx-auto mb-3 text-slate-500" />
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-slate-600 shadow-sm">
+            <AlertCircle className="w-10 h-10 mx-auto mb-3 text-slate-400" />
             <p>{text}</p>
         </div>
     )

@@ -93,3 +93,31 @@
 .react-datepicker.guest-datepicker .react-datepicker__navigation-icon::before {
     border-color: #64748b !important;
 }
+
+[data-public-theme="light"] .react-datepicker,
+[data-public-theme="light"] .react-datepicker.public-datepicker {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12) !important;
+}
+
+[data-public-theme="light"] .react-datepicker__header {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-public-theme="light"] .react-datepicker__current-month {
+    color: #0f172a !important;
+}
+
+[data-public-theme="light"] .react-datepicker__day-name {
+    color: #64748b !important;
+}
+
+[data-public-theme="light"] .react-datepicker__day {
+    color: #334155 !important;
+}
+
+[data-public-theme="light"] .react-datepicker__navigation-icon::before {
+    border-color: #64748b !important;
+}

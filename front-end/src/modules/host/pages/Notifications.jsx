@@ -40,7 +40,7 @@ function HostNotifications() {
 
     if (!ready) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-900 p-6 text-slate-400">
+            <div className="p-6 text-slate-600">
                 Carregando notificacoes do anfitriao...
             </div>
         )
@@ -53,7 +53,7 @@ function HostNotifications() {
             userEmail={recipients[0]}
             title="Notificacoes do anfitriao"
             subtitle="Receba alertas sobre novas reservas, cancelamentos, check-ins, check-outs e pagamentos das suas propriedades."
-            theme="dark"
+            theme="light"
         />
     )
 }

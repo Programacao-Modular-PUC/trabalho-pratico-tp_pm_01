@@ -72,7 +72,12 @@ function NotificationsPage({
     const muted = isDark ? 'text-slate-400' : 'text-slate-600'
 
     return (
-        <div className={`p-6 ${shell}`}>
+        <div className="p-6">
+            <div className={`mb-6 ${card} p-4 border-amber-200 bg-amber-50 text-amber-900`}>
+                <p className="text-sm">
+                    Notificacoes carregadas da API. Se o historico estiver vazio, dados de demonstracao alinhados aos logins de teste sao exibidos automaticamente.
+                </p>
+            </div>
             <div className={`mb-8 ${card} p-8`}>
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-start gap-4">

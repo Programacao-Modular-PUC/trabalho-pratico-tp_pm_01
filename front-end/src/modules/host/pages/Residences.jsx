@@ -214,20 +214,23 @@ function Residences() {
     }
 
     return (
-        <div className="bg-gradient-to-br from-slate-900 via-black to-slate-900 pt-8 pb-12 min-h-screen">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Minhas Residencias</h1>
-                        <p className="text-gray-400">{residences.length} propriedades vinculadas a {hostEmail || 'sua conta'}</p>
+        <div className="p-6">
+            <div className="max-w-7xl mx-auto">
+                <div className="mb-8 rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-semibold uppercase tracking-wider text-amber-600">Residencias</p>
+                            <h1 className="mt-3 text-3xl font-black text-slate-900 mb-2">Minhas Residencias</h1>
+                            <p className="text-slate-600">{residences.length} propriedades vinculadas a {hostEmail || 'sua conta'} — dados da API.</p>
+                        </div>
+                        <button
+                            onClick={loadData}
+                            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                            <RefreshCw size={18} />
+                            Atualizar
+                        </button>
                     </div>
-                    <button
-                        onClick={loadData}
-                        className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-xl font-bold transition flex items-center gap-2"
-                    >
-                        <RefreshCw size={18} />
-                        Atualizar
-                    </button>
                 </div>
 
                 <Feedback error={error} message={message} />
@@ -241,12 +244,12 @@ function Residences() {
                         {residences.map((residence) => {
                             const totalRooms = rooms.filter((room) => room.residenciaId === residence.id).length
                             return (
-                                <div key={residence.id} className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-amber-500/30 transition-all group">
-                                    <div className="h-40 bg-slate-800 flex items-center justify-center">
-                                        <Home size={48} className="text-slate-600" />
+                                <div key={residence.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-amber-400 transition-all group shadow-sm">
+                                    <div className="h-40 bg-amber-50 flex items-center justify-center">
+                                        <Home size={48} className="text-amber-500" />
                                     </div>
                                     <div className="p-6">
-                                        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition">
                                             {residence.endereco}, {residence.numero}
                                         </h3>
                                         <div className="flex items-center gap-1 text-gray-400 text-sm mb-6">
