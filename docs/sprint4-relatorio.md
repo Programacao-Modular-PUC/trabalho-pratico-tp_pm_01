@@ -11,7 +11,62 @@
 
 ## Introdução
 
-Nesta sprint, o grupo evoluiu a arquitetura do sistema aplicando padrões de projeto para ampliar as capacidades da aplicação, mantendo extensibilidade e facilidade de manutenção. Foram escolhidas duas funcionalidades do enunciado, descritas nas seções abaixo de forma separada.
+Nesta sprint, o grupo evoluiu a arquitetura do **MaraúReserve** aplicando padrões de projeto (GoF) para ampliar as capacidades da aplicação, mantendo extensibilidade e facilidade de manutenção. Foram implementadas duas funcionalidades do enunciado:
+
+| Opção | Funcionalidade | Padrões aplicados |
+|-------|----------------|-------------------|
+| **3** | Central de Notificações | Observer, Strategy, Factory, Singleton |
+| **5** | Relatórios Gerenciais | Strategy, Factory, Command, Decorator, Singleton |
+
+O requisito obrigatório de **Singleton** foi atendido em componentes que representam recursos globais (`GerenciadorNotificacoes`, `GerenciadorRelatorios` e `ConfiguracaoReservas`), sem ser o único padrão adotado na sprint.
+
+---
+
+## Diagramas UML
+
+A modelagem desta sprint é apresentada em **dois diagramas de classes** (visão consolidada) e em **diagramas Mermaid** (visão técnica alinhada ao código).
+
+### Diagrama 1 — Domínio e integração com padrões (Sprint 4)
+
+Representa o domínio do sistema e a integração das novas funcionalidades (notificações e relatórios) com as classes existentes, destacando os padrões de projeto aplicados.
+
+![Diagrama UML — domínio e padrões de projeto](imagens/diagrama_UML_padroes_projeto.png)
+
+**Elementos principais:**
+- **Opção 3:** `GerenciadorNotificacoes` (Singleton), `ObservadorNotificacao`, `CanalNotificacao`, `FabricaMensagensNotificacao`
+- **Opção 5:** `GerenciadorRelatorios` (Singleton), `GerarRelatorioCommand`, `RelatorioFactory`, `RelatorioStrategy`, `RelatorioDecorator`
+- **Integração:** `AluguelService` publica eventos no gerenciador de notificações; relatórios consultam `AluguelRepository` sem acoplar o domínio
+
+### Diagrama 2 — Modelo de domínio (sprints anteriores)
+
+Apresenta a modelagem orientada a objetos do núcleo do sistema (residências, quartos, clientes, aluguéis), servindo de **contexto** para as evoluções da Sprint 4.
+
+![Diagrama UML — domínio aprimorado](imagens/diagrama_UML_aprimorado.png)
+
+### Diagramas técnicos (Mermaid)
+
+Para detalhamento por pacote, relações UML (generalização, composição, dependência) e diagramas de sequência, consulte [sprint4-diagramas.md](sprint4-diagramas.md).
+
+### Nota sobre diagrama × implementação
+
+Os diagramas PNG possuem **caráter conceitual e integrador**, úteis para visualizar o sistema como um todo. A implementação atual do backend segue o código-fonte em `back/src/main/java`, com algumas simplificações em relação ao diagrama de domínio, por exemplo:
+
+- `Quarto` é modelado como **entidade única** com enum `TipoQuarto` (não como hierarquia de subclasses)
+- Confirmação de pagamento é feita via campo `pagamentoConfirmado` em `Aluguel` (sem entidade `Pagamento` separada)
+- `RelatorioStrategy` é **interface** com seis implementações em `reports.impl` (não enum)
+
+O documento [sprint4-diagramas.md](sprint4-diagramas.md) reflete fielmente a estrutura implementada e deve ser usado como referência técnica complementar.
+
+### Mapa consolidado — padrão × classe
+
+| Padrão | Opção 3 — Notificações | Opção 5 — Relatórios |
+|--------|------------------------|----------------------|
+| **Singleton** | `GerenciadorNotificacoes` | `GerenciadorRelatorios` |
+| **Observer** | `ObservadorNotificacao`, `DespachanteNotificacaoObserver` | — |
+| **Strategy** | `CanalNotificacao` (+ 4 canais) | `RelatorioStrategy` (+ 6 strategies) |
+| **Factory** | `FabricaMensagensNotificacao` | `RelatorioFactory` |
+| **Command** | — | `GerarRelatorioCommand` |
+| **Decorator** | — | `RelatorioDecorator`, `CabecalhoRelatorioDecorator` |
 
 ---
 
@@ -151,7 +206,7 @@ A Central de Notificações é um **recurso global** da aplicação. Manter uma 
 | **Extensibilidade** | Novos canais = nova classe `CanalNotificacao` |
 | **Manutenibilidade** | Mensagens centralizadas na Factory (`FabricaMensagensNotificacaoPadrao`) |
 | **Desacoplamento** | `AluguelService` não conhece e-mail, SMS ou WhatsApp |
-| **Testabilidade** | Canais e observadores podem ser mockados isoladamente |
+| **Testabilidade** | Testes em `GerenciadorNotificacoesTest` |
 | **Consistência** | Singleton garante ponto único de publicação e histórico |
 
 ## 6. Como demonstrar
@@ -168,8 +223,6 @@ A Central de Notificações é um **recurso global** da aplicação. Manter uma 
 ---
 
 # Parte II — Opção 5: Relatórios Gerenciais
-
-> **Status:** funcionalidade **implementada** no backend (`reports/`), exposta via API REST e consumida pela tela de relatórios do anfitrião no frontend.
 
 ## 1. Problema identificado
 
@@ -351,6 +404,25 @@ Conforme exigido pelo enunciado, o padrão Singleton é utilizado em componentes
 | `GerenciadorRelatorios` | Central de relatórios gerenciais (Opção 5) | Implementado |
 
 O Singleton **não é o único padrão** adotado na sprint: ele complementa Observer, Strategy e Factory na Central de Notificações (Opção 3), e complementa Strategy, Factory, Command e Decorator nos Relatórios Gerenciais (Opção 5).
+
+---
+
+## Benefícios obtidos com a nova arquitetura
+
+A evolução arquitetural da Sprint 4 trouxe ganhos concretos para o MaraúReserve:
+
+| Dimensão | Antes | Depois |
+|----------|-------|--------|
+| **Notificações** | Lógica de envio acoplada ao serviço de aluguel | Barramento central (Observer + Singleton) com canais plugáveis (Strategy) |
+| **Mensagens** | Formatação espalhada | Factory centraliza títulos, conteúdo e destinatários |
+| **Relatórios** | Risco de duplicação em controllers | Cada relatório isolado em Strategy; Factory resolve o tipo |
+| **Solicitações** | Controller conheceria detalhes de execução | Command encapsula tipo e filtros |
+| **Apresentação** | Dados brutos da consulta | Decorator enriquece com cabeçalho sem alterar cálculos |
+| **Extensibilidade** | Alterações em cascata | Novo canal, observador ou relatório = nova classe + registro |
+| **Manutenção** | Alto acoplamento | Responsabilidades separadas por pacote (`notifications.*`, `reports.*`) |
+| **Qualidade** | Cobertura limitada | Testes unitários nos módulos de notificações e relatórios |
+
+Em conjunto, os padrões adotados permitem que o sistema **creça por extensão** (novas classes) em vez de **modificação** (alteração de código existente), alinhando-se ao princípio Aberto/Fechado (OCP) e às boas práticas de orientação a objetos exigidas na disciplina.
 
 ---
 
