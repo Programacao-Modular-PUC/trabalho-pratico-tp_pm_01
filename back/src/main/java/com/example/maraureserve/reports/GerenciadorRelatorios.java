@@ -3,6 +3,8 @@ package com.example.maraureserve.reports;
 import org.springframework.stereotype.Component;
 
 import com.example.maraureserve.reports.command.GerarRelatorioCommand;
+import com.example.maraureserve.reports.decorator.CabecalhoRelatorioDecorator;
+import com.example.maraureserve.reports.decorator.RelatorioResultado;
 
 import java.util.Map;
 import java.util.Set;
@@ -36,8 +38,10 @@ public class GerenciadorRelatorios {
         return instancia;
     }
 
-    public Object executar(GerarRelatorioCommand command) {
-        return command.executar(relatorioFactory);
+    public RelatorioResultado executar(GerarRelatorioCommand command) {
+        Object dados = command.executar(relatorioFactory);
+        RelatorioResultado base = new RelatorioResultado(command.getTipo(), dados);
+        return new CabecalhoRelatorioDecorator(base).decorar();
     }
 
     public Object gerarRelatorio(String tipo, Map<String, Object> parametros) {

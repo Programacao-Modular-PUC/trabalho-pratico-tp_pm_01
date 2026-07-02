@@ -29,6 +29,16 @@ async function request(path, options = {}) {
     return response.json()
 }
 
+function unwrapRelatorio(data) {
+    if (Array.isArray(data)) {
+        return data
+    }
+    if (data && Array.isArray(data.dados)) {
+        return data.dados
+    }
+    return data ?? []
+}
+
 export const api = {
     listClientes: () => request('/clientes'),
     createCliente: (data) => request('/clientes', {
@@ -76,33 +86,34 @@ export const api = {
     listNotificacoes: () => request('/notificacoes'),
     listNotificacoesPorEvento: (tipo) => request(`/notificacoes/evento/${tipo}`),
 
-    getRelatorioFaturamentoMensal: (ano) => {
+    getRelatorioFaturamentoMensal: async (ano) => {
         const q = ano ? `?ano=${ano}` : '';
-        return request(`/relatorios/faturamento-mensal${q}`);
+        return unwrapRelatorio(await request(`/relatorios/faturamento-mensal${q}`));
     },
-    getRelatorioTaxaOcupacao: (dataInicio, dataFim) => {
+    getRelatorioTaxaOcupacao: async (dataInicio, dataFim) => {
         const p = new URLSearchParams();
         if (dataInicio) p.set('dataInicio', dataInicio);
         if (dataFim) p.set('dataFim', dataFim);
         const q = p.toString();
-        return request(`/relatorios/taxa-ocupacao${q ? `?${q}` : ''}`);
+        return unwrapRelatorio(await request(`/relatorios/taxa-ocupacao${q ? `?${q}` : ''}`));
     },
-    getRelatorioClientesFrequentes: (limite) => {
+    getRelatorioClientesFrequentes: async (limite) => {
         const q = limite ? `?limite=${limite}` : '';
-        return request(`/relatorios/clientes-frequentes${q}`);
+        return unwrapRelatorio(await request(`/relatorios/clientes-frequentes${q}`));
     },
-    getRelatorioQuartosMaisAlugados: (limite) => {
+    getRelatorioQuartosMaisAlugados: async (limite) => {
         const q = limite ? `?limite=${limite}` : '';
-        return request(`/relatorios/quartos-mais-alugados${q}`);
+        return unwrapRelatorio(await request(`/relatorios/quartos-mais-alugados${q}`));
     },
-    getRelatorioReceitaPorTipoQuarto: () => request('/relatorios/receita-por-tipo-quarto'),
-    getRelatorioHistoricoReservas: ({ dataInicio, dataFim, clienteId, quartoId } = {}) => {
+    getRelatorioReceitaPorTipoQuarto: async () =>
+        unwrapRelatorio(await request('/relatorios/receita-por-tipo-quarto')),
+    getRelatorioHistoricoReservas: async ({ dataInicio, dataFim, clienteId, quartoId } = {}) => {
         const p = new URLSearchParams();
         if (dataInicio) p.set('dataInicio', dataInicio);
         if (dataFim) p.set('dataFim', dataFim);
         if (clienteId) p.set('clienteId', clienteId);
         if (quartoId) p.set('quartoId', quartoId);
         const q = p.toString();
-        return request(`/relatorios/historico-reservas${q ? `?${q}` : ''}`);
+        return unwrapRelatorio(await request(`/relatorios/historico-reservas${q ? `?${q}` : ''}`));
     },
 }
