@@ -42,9 +42,18 @@ function LoadingSpinner() {
 
 function EmptyState({ message = 'Nenhum dado encontrado.' }) {
     return (
-        <div className="text-center py-16 text-slate-500">{message}</div>
+        <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            {message}
+        </div>
     );
 }
+
+function Label({ children }) {
+    return <label className="block text-xs font-semibold text-slate-500 mb-1">{children}</label>;
+}
+
+const inputClass =
+    'bg-white border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500';
 
 function TableWrapper({ children }) {
     return (
@@ -105,8 +114,8 @@ function BarChart({ data }) {
                 return (
                     <g key={i}>
                         <line x1={padL} x2={VW - padR} y1={y} y2={y}
-                            stroke={i === steps ? '#334155' : '#1e293b'} strokeWidth="1" />
-                        <text x={padL - 6} y={y + 4} textAnchor="end" fill="#475569" fontSize="9">
+                            stroke={i === steps ? '#cbd5e1' : '#e2e8f0'} strokeWidth="1" />
+                        <text x={padL - 6} y={y + 4} textAnchor="end" fill="#64748b" fontSize="9">
                             {fmtK(val)}
                         </text>
                     </g>
@@ -132,8 +141,8 @@ function BarChart({ data }) {
                         style={{ cursor: 'pointer' }}
                     >
                         <rect x={x} y={barTop} width={barW} height={barH} rx="3"
-                            fill={isHov ? '#fbbf24' : '#f59e0b'}
-                            opacity={isHov ? 1 : 0.75} />
+                            fill={isHov ? '#f59e0b' : '#fbbf24'}
+                            opacity={isHov ? 1 : 0.85} />
 
                         {/* Tooltip fixo no topo */}
                         {isHov && (
@@ -148,12 +157,12 @@ function BarChart({ data }) {
                         )}
 
                         {/* Mês */}
-                        <text x={cx} y={padTop + plotH + 13} textAnchor="middle" fill="#94a3b8" fontSize="9">
+                        <text x={cx} y={padTop + plotH + 13} textAnchor="middle" fill="#64748b" fontSize="9">
                             {(d.nomeMes ?? '').slice(0, 3)}
                         </text>
                         {/* Ano — só quando muda */}
                         {showYear && (
-                            <text x={cx} y={padTop + plotH + 25} textAnchor="middle" fill="#475569" fontSize="8">
+                            <text x={cx} y={padTop + plotH + 25} textAnchor="middle" fill="#334155" fontSize="8">
                                 {d.ano}
                             </text>
                         )}
@@ -197,17 +206,17 @@ function FaturamentoMensal() {
             {/* Filtros */}
             <div className="flex flex-wrap items-end gap-3">
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Ano</label>
+                    <Label>Ano</Label>
                     <select value={anoFiltro} onChange={e => { setAnoFiltro(e.target.value); setMesFiltro(''); }}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                        className={inputClass}>
                         <option value="">Todos os anos</option>
                         {anos.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Mês</label>
+                    <Label>Mês</Label>
                     <select value={mesFiltro} onChange={e => setMesFiltro(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                        className={inputClass}>
                         <option value="">Todos os meses</option>
                         {MESES.slice(1).map((nome, i) => (
                             <option key={i + 1} value={i + 1}>{nome}</option>
@@ -216,7 +225,7 @@ function FaturamentoMensal() {
                 </div>
                 {(anoFiltro || mesFiltro) && (
                     <button onClick={() => { setAnoFiltro(''); setMesFiltro(''); }}
-                        className="px-4 py-2 text-gray-400 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-sm transition-colors">
+                        className="px-4 py-2 text-slate-500 hover:text-slate-900 border border-slate-300 hover:border-slate-400 rounded-lg text-sm transition-colors">
                         Limpar
                     </button>
                 )}
@@ -226,22 +235,22 @@ function FaturamentoMensal() {
                 <>
                     {/* Gráfico + resumo */}
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                        <div className="lg:col-span-3 bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
-                            <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Faturamento por período</p>
+                        <div className="lg:col-span-3 bg-slate-50 rounded-xl p-4 border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-2 uppercase tracking-wider font-semibold">Faturamento por período</p>
                             <BarChart data={filtered} />
                         </div>
                         <div className="flex flex-col gap-3">
-                            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30 flex-1">
-                                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total</p>
-                                <p className="text-xl font-black text-amber-400">{formatCurrency(total)}</p>
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex-1">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1 font-semibold">Total</p>
+                                <p className="text-xl font-black text-amber-600">{formatCurrency(total)}</p>
                             </div>
-                            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30 flex-1">
-                                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Períodos</p>
-                                <p className="text-xl font-black text-white">{filtered.length}</p>
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex-1">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1 font-semibold">Períodos</p>
+                                <p className="text-xl font-black text-slate-900">{filtered.length}</p>
                             </div>
-                            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30 flex-1">
-                                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Média/mês</p>
-                                <p className="text-xl font-black text-white">
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex-1">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1 font-semibold">Média/mês</p>
+                                <p className="text-xl font-black text-slate-900">
                                     {formatCurrency(filtered.length ? total / filtered.length : 0)}
                                 </p>
                             </div>
@@ -260,11 +269,11 @@ function FaturamentoMensal() {
                         </thead>
                         <tbody>
                             {filtered.map((r, i) => (
-                                <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                                <tr key={i} className="hover:bg-slate-50 transition-colors">
                                     <Td>{r.ano}</Td>
                                     <Td className="capitalize">{r.nomeMes}</Td>
                                     <Td>{r.quantidadeAlugueis}</Td>
-                                    <Td className="font-bold text-amber-400">{formatCurrency(r.totalFaturado)}</Td>
+                                    <Td className="font-bold text-amber-600">{formatCurrency(r.totalFaturado)}</Td>
                                 </tr>
                             ))}
                         </tbody>
@@ -300,14 +309,14 @@ function TaxaOcupacao() {
         <div className="space-y-6">
             <div className="flex flex-wrap items-end gap-3">
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Data início</label>
+                    <Label>Data início</Label>
                     <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                        className={inputClass} />
                 </div>
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Data fim</label>
+                    <Label>Data fim</Label>
                     <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                        className={inputClass} />
                 </div>
                 <button onClick={load} className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg text-sm transition-colors">
                     <Filter className="w-4 h-4" /> Filtrar
@@ -327,20 +336,20 @@ function TaxaOcupacao() {
                     </thead>
                     <tbody>
                         {data.map((r, i) => (
-                            <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                                <Td className="font-mono font-bold text-white">{r.codigoQuarto}</Td>
+                            <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                <Td className="font-mono font-bold text-slate-900">{r.codigoQuarto}</Td>
                                 <Td>{TIPO_QUARTO_LABELS[r.tipoQuarto] ?? r.tipoQuarto}</Td>
                                 <Td>{r.totalDiasOcupados}</Td>
                                 <Td>{r.totalDiasNoPeriodo}</Td>
                                 <Td>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex-1 bg-slate-700/50 rounded-full h-2 min-w-[80px]">
+                                        <div className="flex-1 bg-slate-200 rounded-full h-2 min-w-[80px]">
                                             <div
                                                 className="bg-gradient-to-r from-purple-500 to-purple-400 h-2 rounded-full"
                                                 style={{ width: `${Math.min(r.taxaOcupacaoPercentual, 100)}%` }}
                                             />
                                         </div>
-                                        <span className="font-bold text-purple-300 w-14 text-right">
+                                        <span className="font-bold text-purple-600 w-14 text-right">
                                             {r.taxaOcupacaoPercentual.toFixed(1)}%
                                         </span>
                                     </div>
@@ -376,9 +385,9 @@ function ClientesFrequentes() {
         <div className="space-y-6">
             <div className="flex items-end gap-3">
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Top N clientes</label>
+                    <Label>Top N clientes</Label>
                     <select value={limite} onChange={(e) => setLimite(Number(e.target.value))}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                        className={inputClass}>
                         {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                 </div>
@@ -397,22 +406,22 @@ function ClientesFrequentes() {
                     </thead>
                     <tbody>
                         {data.map((r, i) => (
-                            <tr key={r.clienteId} className="hover:bg-slate-800/30 transition-colors">
+                            <tr key={r.clienteId} className="hover:bg-slate-50 transition-colors">
                                 <Td>
                                     <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
                                         i === 0 ? 'bg-amber-500 text-black' :
                                         i === 1 ? 'bg-slate-400 text-black' :
-                                        i === 2 ? 'bg-amber-800 text-white' : 'bg-slate-700 text-gray-300'
+                                        i === 2 ? 'bg-amber-800 text-white' : 'bg-slate-100 text-slate-600'
                                     }`}>{i + 1}</span>
                                 </Td>
-                                <Td className="font-bold text-white">{r.nomeCliente}</Td>
-                                <Td className="font-mono text-gray-400">{r.cpf}</Td>
+                                <Td className="font-bold text-slate-900">{r.nomeCliente}</Td>
+                                <Td className="font-mono text-slate-500">{r.cpf}</Td>
                                 <Td>
-                                    <span className="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">
                                         {r.totalReservas}
                                     </span>
                                 </Td>
-                                <Td className="font-bold text-amber-400">{formatCurrency(r.totalGasto)}</Td>
+                                <Td className="font-bold text-amber-600">{formatCurrency(r.totalGasto)}</Td>
                             </tr>
                         ))}
                     </tbody>
@@ -444,9 +453,9 @@ function QuartosMaisAlugados() {
         <div className="space-y-6">
             <div className="flex items-end gap-3">
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Top N quartos</label>
+                    <Label>Top N quartos</Label>
                     <select value={limite} onChange={(e) => setLimite(Number(e.target.value))}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                        className={inputClass}>
                         {[5, 10, 20].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                 </div>
@@ -465,22 +474,22 @@ function QuartosMaisAlugados() {
                     </thead>
                     <tbody>
                         {data.map((r, i) => (
-                            <tr key={r.quartoId} className="hover:bg-slate-800/30 transition-colors">
+                            <tr key={r.quartoId} className="hover:bg-slate-50 transition-colors">
                                 <Td>
                                     <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
                                         i === 0 ? 'bg-amber-500 text-black' :
                                         i === 1 ? 'bg-slate-400 text-black' :
-                                        i === 2 ? 'bg-amber-800 text-white' : 'bg-slate-700 text-gray-300'
+                                        i === 2 ? 'bg-amber-800 text-white' : 'bg-slate-100 text-slate-600'
                                     }`}>{i + 1}</span>
                                 </Td>
-                                <Td className="font-mono font-bold text-white">{r.codigoQuarto}</Td>
+                                <Td className="font-mono font-bold text-slate-900">{r.codigoQuarto}</Td>
                                 <Td>{TIPO_QUARTO_LABELS[r.tipoQuarto] ?? r.tipoQuarto}</Td>
                                 <Td>
-                                    <span className="bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full text-xs font-bold">
+                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">
                                         {r.totalAlugueis}
                                     </span>
                                 </Td>
-                                <Td className="font-bold text-amber-400">{formatCurrency(r.receitaTotal)}</Td>
+                                <Td className="font-bold text-amber-600">{formatCurrency(r.receitaTotal)}</Td>
                             </tr>
                         ))}
                     </tbody>
@@ -509,24 +518,24 @@ function ReceitaPorTipoQuarto() {
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {data.map((r) => (
-                            <div key={r.tipoQuarto} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 hover:border-amber-500/30 transition-all">
-                                <p className="text-gray-400 text-sm mb-1">{TIPO_QUARTO_LABELS[r.tipoQuarto] ?? r.tipoQuarto}</p>
-                                <p className="text-2xl font-black text-white mb-3">{formatCurrency(r.receitaTotal)}</p>
-                                <div className="space-y-1 text-xs text-gray-500">
+                            <div key={r.tipoQuarto} className="bg-slate-50 border border-slate-200 rounded-2xl p-5 hover:border-amber-400 transition-all">
+                                <p className="text-slate-500 text-sm mb-1">{TIPO_QUARTO_LABELS[r.tipoQuarto] ?? r.tipoQuarto}</p>
+                                <p className="text-2xl font-black text-slate-900 mb-3">{formatCurrency(r.receitaTotal)}</p>
+                                <div className="space-y-1 text-xs text-slate-500">
                                     <div className="flex justify-between">
                                         <span>Reservas</span>
-                                        <span className="text-gray-300 font-semibold">{r.totalAlugueis}</span>
+                                        <span className="text-slate-700 font-semibold">{r.totalAlugueis}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Ticket médio</span>
-                                        <span className="text-amber-400 font-semibold">{formatCurrency(r.ticketMedio)}</span>
+                                        <span className="text-amber-600 font-semibold">{formatCurrency(r.ticketMedio)}</span>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className="text-right text-lg font-black text-white">
-                        Receita total: <span className="text-amber-400">{formatCurrency(total)}</span>
+                    <div className="text-right text-lg font-black text-slate-900">
+                        Receita total: <span className="text-amber-600">{formatCurrency(total)}</span>
                     </div>
                 </>
             )}
@@ -564,24 +573,24 @@ function HistoricoReservas() {
         <div className="space-y-6">
             <div className="flex flex-wrap items-end gap-3">
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Data início</label>
+                    <Label>Data início</Label>
                     <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                        className={inputClass} />
                 </div>
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">Data fim</label>
+                    <Label>Data fim</Label>
                     <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                        className={inputClass} />
                 </div>
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">ID do cliente</label>
+                    <Label>ID do cliente</Label>
                     <input type="number" placeholder="Ex: 1" value={clienteId} onChange={(e) => setClienteId(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500 w-28" />
+                        className={`${inputClass} w-28`} />
                 </div>
                 <div>
-                    <label className="block text-xs text-gray-400 mb-1">ID do quarto</label>
+                    <Label>ID do quarto</Label>
                     <input type="number" placeholder="Ex: 1" value={quartoId} onChange={(e) => setQuartoId(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500 w-28" />
+                        className={`${inputClass} w-28`} />
                 </div>
                 <button onClick={load} className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg text-sm transition-colors">
                     <Filter className="w-4 h-4" /> Filtrar
@@ -604,16 +613,16 @@ function HistoricoReservas() {
                     </thead>
                     <tbody>
                         {data.map((r) => (
-                            <tr key={r.id} className="hover:bg-slate-800/30 transition-colors">
-                                <Td className="text-gray-500 font-mono">#{r.id}</Td>
-                                <Td className="font-semibold text-white">{r.nomeCliente}</Td>
+                            <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                                <Td className="text-slate-500 font-mono">#{r.id}</Td>
+                                <Td className="font-semibold text-slate-900">{r.nomeCliente}</Td>
                                 <Td className="font-mono">{r.codigoQuarto}</Td>
                                 <Td>{formatDate(r.dataEntrada)}</Td>
                                 <Td>{formatDate(r.dataSaida)}</Td>
                                 <Td>{r.quantidadeDiarias}</Td>
-                                <Td className="font-bold text-amber-400">{formatCurrency(r.valorFinal)}</Td>
+                                <Td className="font-bold text-amber-600">{formatCurrency(r.valorFinal)}</Td>
                                 <Td>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_COLORS[r.status] ?? 'bg-slate-700 text-gray-300'}`}>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_COLORS[r.status] ?? 'bg-slate-100 text-slate-600'}`}>
                                         {STATUS_LABELS[r.status] ?? r.status}
                                     </span>
                                 </Td>
