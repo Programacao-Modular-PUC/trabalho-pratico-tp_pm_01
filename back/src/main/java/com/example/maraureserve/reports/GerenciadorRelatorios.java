@@ -38,6 +38,12 @@ public class GerenciadorRelatorios {
         return instancia;
     }
 
+    static void resetInstance() {
+        synchronized (GerenciadorRelatorios.class) {
+            instancia = null;
+        }
+    }
+
     public RelatorioResultado executar(GerarRelatorioCommand command) {
         Object dados = command.executar(relatorioFactory);
         RelatorioResultado base = new RelatorioResultado(command.getTipo(), dados);
