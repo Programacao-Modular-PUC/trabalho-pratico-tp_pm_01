@@ -5,7 +5,7 @@
 
 **Funcionalidades escolhidas:**
 - **Opção 3** — Central de Notificações *(implementada)*
-- **Opção 5** — Relatórios Gerenciais *(planejada — implementação pendente)*
+- **Opção 5** — Relatórios Gerenciais *(implementada)*
 
 ---
 
@@ -28,7 +28,7 @@ Antes da evolução arquitetural, o `AluguelService` concentra apenas regras de 
 
 ## 2. Solução proposta e padrões utilizados
 
-A solução utiliza apenas padrões permitidos na disciplina: **Observer**, **Strategy**, **Factory** e **Singleton**.
+A solução utiliza os padrões: **Observer**, **Strategy**, **Factory** e **Singleton**.
 
 ### 2.1 Observer (Observador)
 
@@ -169,7 +169,7 @@ A Central de Notificações é um **recurso global** da aplicação. Manter uma 
 
 # Parte II — Opção 5: Relatórios Gerenciais
 
-> **Status:** funcionalidade escolhida e documentada neste relatório. A implementação ainda **não foi realizada** e será desenvolvida em etapa posterior.
+> **Status:** funcionalidade **implementada** no backend (`reports/`), exposta via API REST e consumida pela tela de relatórios do anfitrião no frontend.
 
 ## 1. Problema identificado
 
@@ -180,84 +180,163 @@ Os proprietários precisam acompanhar o desempenho do negócio por meio de relat
 3. **Dificultar extensão** — adicionar um novo tipo de relatório exigiria modificar código já existente;
 4. **Concentrar responsabilidades** — serviços de domínio (ex.: `AluguelService`) passariam a conhecer detalhes de apresentação e exportação de dados.
 
-## 2. Solução proposta e padrões escolhidos
+## 2. Solução proposta e padrões utilizados
 
-Para a Opção 5, o grupo definiu a combinação abaixo, utilizando **somente padrões permitidos** *(ainda não implementada)*:
+A solução utiliza **Strategy**, **Factory**, **Command**, **Decorator** e **Singleton**, organizados no pacote `reports/`.
 
 ### 2.1 Strategy (Estratégia)
 
-**Papel previsto:** representar cada tipo de relatório como uma estratégia independente.
+**Onde:** pacote `reports` e `reports.impl`
 
-**Componentes planejados:**
-- `RelatorioStrategy` — interface comum (`gerar`, `getTipo`)
-- Implementações concretas por relatório
+**Componentes:**
+- `RelatorioStrategy` — interface comum (`getTipo`, `gerar`)
+- Implementações concretas em `reports.impl`
 
-**Exemplos de estratégias planejadas:**
+**Estratégias implementadas:**
 
-| Relatório | Descrição |
-|-----------|-----------|
-| Faturamento mensal | Total de receita por período |
-| Taxa de ocupação | Percentual de quartos/residências ocupados |
-| Clientes mais frequentes | Ranking por quantidade de hospedagens |
-| Quartos mais alugados | Ranking de quartos por número de reservas |
-| Receita por tipo de quarto | Agregação por `TipoQuarto` |
-| Histórico de reservas | Listagem consolidada por filtros |
+| Tipo | Classe | Descrição |
+|------|--------|-----------|
+| `FATURAMENTO_MENSAL` | `FaturamentoMensalStrategy` | Receita agrupada por mês/ano |
+| `TAXA_OCUPACAO` | `TaxaOcupacaoStrategy` | Percentual de ocupação por quarto |
+| `CLIENTES_FREQUENTES` | `ClientesFrequentesStrategy` | Ranking de clientes por reservas |
+| `QUARTOS_MAIS_ALUGADOS` | `QuartosMaisAlugadosStrategy` | Ranking de quartos por aluguéis |
+| `RECEITA_POR_TIPO_QUARTO` | `ReceitaPorTipoQuartoStrategy` | Receita agrupada por `TipoQuarto` |
+| `HISTORICO_RESERVAS` | `HistoricoReservasStrategy` | Listagem consolidada com filtros |
 
-**Justificativa:** o Strategy permite registrar e executar relatórios de forma plugável. O sistema seleciona a estratégia desejada em tempo de execução, sem alterar o código que consome os relatórios.
+**Como foi usado:**
+
+Cada relatório encapsula sua consulta e regras de agregação. A strategy é selecionada em tempo de execução conforme o tipo solicitado, sem alterar o controller ou o serviço consumidor.
+
+**Justificativa:** o Strategy permite adicionar novos relatórios implementando a interface e registrando a estratégia na factory, respeitando o princípio Aberto/Fechado (OCP).
 
 ### 2.2 Factory (Fábrica)
 
-**Papel previsto:** instanciar a estratégia correta conforme o tipo solicitado.
+**Onde:** `RelatorioFactory`
 
-**Componentes planejados:**
-- `RelatorioFactory` — recebe o tipo do relatório (ex.: `FATURAMENTO_MENSAL`) e retorna a `RelatorioStrategy` correspondente
+**Componentes:**
+- `RelatorioFactory` — registra todas as `RelatorioStrategy` injetadas pelo Spring e resolve a estratégia pelo tipo
 
-**Justificativa:** encapsula a criação dos relatórios, evitando `if/switch` espalhados em controllers e services. Novos relatórios são registrados na fábrica sem modificar quem consome a funcionalidade.
+**Como foi usado:**
+
+```java
+RelatorioStrategy estrategia = relatorioFactory.criar("FATURAMENTO_MENSAL");
+return estrategia.gerar(parametros);
+```
+
+**Justificativa:** centraliza o registro e a resolução das estratégias, evitando `if/switch` espalhados em controllers e services.
 
 ### 2.3 Command (Comando)
 
-**Papel previsto:** encapsular cada solicitação de geração de relatório como um objeto executável.
+**Onde:** pacote `reports.command`
 
-**Componentes planejados:**
-- `GerarRelatorioCommand` — armazena tipo do relatório e filtros (período, residência, etc.)
-- `executar()` — delega à `RelatorioFactory` e retorna o resultado
+**Componentes:**
+- `GerarRelatorioCommand` — encapsula tipo do relatório e mapa de parâmetros (filtros)
+- `executar(RelatorioFactory)` — delega à factory e retorna os dados calculados
 
-**Justificativa:** desacopla quem solicita o relatório (controller/API) da lógica de execução, facilitando filas de processamento, histórico de comandos e extensão futura.
+**Como foi usado:**
+
+O `RelatorioService` cria um comando e o `GerenciadorRelatorios` o executa:
+
+```java
+GerarRelatorioCommand command = new GerarRelatorioCommand(tipo, parametros);
+return gerenciador.executar(command);
+```
+
+**Justificativa:** desacopla quem solicita o relatório (controller/API) da lógica de execução, facilitando extensão futura (filas, auditoria, histórico de comandos).
 
 ### 2.4 Decorator (Decorador)
 
-**Papel previsto:** compor formatações adicionais sobre o resultado base do relatório.
+**Onde:** pacote `reports.decorator`
 
-**Componentes planejados:**
-- `RelatorioResultado` — estrutura base retornada pela strategy
-- `RelatorioDecorator` — classe base que envolve outro resultado
-- Decoradores concretos, ex.: `CabecalhoRelatorioDecorator`, `ResumoExecutivoDecorator`
+**Componentes:**
+- `RelatorioResultado` — estrutura com `tipo`, `titulo`, `geradoEm` e `dados`
+- `RelatorioDecorator` — classe base abstrata
+- `CabecalhoRelatorioDecorator` — adiciona título e data de geração ao resultado
 
-**Justificativa:** permite enriquecer a apresentação (cabeçalho, totais, observações) sem alterar as classes de cálculo de cada relatório.
+**Como foi usado:**
+
+Após a strategy calcular os dados, o gerenciador monta um `RelatorioResultado` base e aplica o decorator de cabeçalho:
+
+```java
+Object dados = command.executar(relatorioFactory);
+RelatorioResultado base = new RelatorioResultado(command.getTipo(), dados);
+return new CabecalhoRelatorioDecorator(base).decorar();
+```
+
+A API retorna um objeto JSON estruturado (`tipo`, `titulo`, `geradoEm`, `dados`). O frontend extrai o campo `dados` em `api.js` para manter compatibilidade com a tela `Relatorios.jsx`.
+
+**Justificativa:** enriquece a apresentação do relatório sem alterar as classes de cálculo de cada strategy.
 
 ### 2.5 Singleton
 
-**Papel previsto:** `GerenciadorRelatorios` como ponto central de registro e execução.
+**Onde:** `GerenciadorRelatorios`
+
+**Como foi usado:**
+
+Classe anotada com `@Component`, inicializada uma única vez pelo Spring e acessível via `getInstance()`. Centraliza:
+
+- execução de comandos;
+- aplicação do decorator;
+- delegação à `RelatorioFactory` para listagem de tipos disponíveis.
 
 **Justificativa da instância única:**
 
-O gerenciador de relatórios será um **recurso global** responsável por:
-
-- registrar as estratégias e comandos disponíveis;
-- centralizar a execução via Factory;
-- evitar múltiplas instâncias com registros inconsistentes de relatórios.
+O gerenciador de relatórios é um **recurso global** da aplicação. Uma única instância garante registro consistente das estratégias e ponto central de execução em toda a aplicação.
 
 > O enunciado da sprint cita explicitamente o **Gerenciador de relatórios** como exemplo válido de aplicação do padrão Singleton.
 
-## 3. Benefícios esperados
+## 3. Relatórios e endpoints implementados
+
+| Relatório | Endpoint | Parâmetros opcionais |
+|-----------|----------|----------------------|
+| Tipos disponíveis | `GET /relatorios` | — |
+| Faturamento mensal | `GET /relatorios/faturamento-mensal` | `ano` |
+| Taxa de ocupação | `GET /relatorios/taxa-ocupacao` | `dataInicio`, `dataFim` |
+| Clientes frequentes | `GET /relatorios/clientes-frequentes` | `limite` |
+| Quartos mais alugados | `GET /relatorios/quartos-mais-alugados` | `limite` |
+| Receita por tipo de quarto | `GET /relatorios/receita-por-tipo-quarto` | — |
+| Histórico de reservas | `GET /relatorios/historico-reservas` | `dataInicio`, `dataFim`, `clienteId`, `quartoId` |
+
+Documentação interativa disponível em `/swagger-ui.html` (tag **Relatórios**).
+
+## 4. Fluxo de execução
+
+```text
+1. Proprietário acessa a tela Relatórios no frontend (módulo host)
+2. Frontend chama GET /relatorios/{tipo} via api.js
+3. RelatorioController delega ao RelatorioService
+4. RelatorioService cria GerarRelatorioCommand (Command)
+5. GerenciadorRelatorios.executar() (Singleton) invoca o command
+6. RelatorioFactory resolve a RelatorioStrategy correta (Factory + Strategy)
+7. Strategy consulta AluguelRepository e retorna dados agregados
+8. CabecalhoRelatorioDecorator enriquece o resultado (Decorator)
+9. API retorna RelatorioResultado; frontend usa campo dados para renderização
+```
+
+## 5. Benefícios obtidos
 
 | Benefício | Descrição |
 |-----------|-----------|
-| **Extensibilidade** | Novo relatório = nova `Strategy` registrada na Factory |
+| **Extensibilidade** | Novo relatório = nova `RelatorioStrategy` registrada automaticamente na Factory |
 | **Organização** | Command encapsula solicitações; Singleton centraliza execução |
-| **Manutenibilidade** | Cada relatório isolado em sua própria classe |
-| **Apresentação flexível** | Decorator adiciona formatações sem mudar o núcleo |
-| **Desacoplamento** | Serviços de domínio não precisam conhecer detalhes de cada relatório |
+| **Manutenibilidade** | Cada relatório isolado em sua própria classe em `reports.impl` |
+| **Apresentação flexível** | Decorator adiciona cabeçalho sem mudar o núcleo de cálculo |
+| **Desacoplamento** | `AluguelService` e demais serviços de domínio não conhecem detalhes dos relatórios |
+| **Testabilidade** | Testes unitários em `RelatorioFactoryTest`, `GerarRelatorioCommandTest`, `GerenciadorRelatoriosTest` e `FaturamentoMensalStrategyTest` |
+
+## 6. Como demonstrar
+
+1. Subir a aplicação (`docker-compose up` ou Spring Boot local na porta 8081).
+2. Cadastrar reservas/aluguéis via `POST /alugueis` (ou usar dados do seeder).
+3. Listar tipos disponíveis: `GET /relatorios`.
+4. Consultar relatórios individualmente, por exemplo:
+   - `GET /relatorios/faturamento-mensal`
+   - `GET /relatorios/taxa-ocupacao`
+   - `GET /relatorios/clientes-frequentes?limite=5`
+5. Acessar o frontend como anfitrião e abrir a página **Relatórios** (`Relatorios.jsx`).
+6. Navegar pelas abas (Faturamento, Ocupação, Clientes, etc.) e validar gráficos/tabelas.
+7. Conferir no Swagger a resposta JSON com `titulo`, `geradoEm` e `dados`.
+8. Rodar testes do módulo: `mvn test` no diretório `back` (inclui testes em `reports/`).
 
 
 
@@ -269,9 +348,9 @@ Conforme exigido pelo enunciado, o padrão Singleton é utilizado em componentes
 |------------|----------------|--------|
 | `ConfiguracaoReservas` | Configurações globais de reservas (Sprint anterior) | Implementado |
 | `GerenciadorNotificacoes` | Central de notificações (Opção 3) | Implementado |
-| `GerenciadorRelatorios` | Central de relatórios gerenciais (Opção 5) | Planejado |
+| `GerenciadorRelatorios` | Central de relatórios gerenciais (Opção 5) | Implementado |
 
-O Singleton **não é o único padrão** adotado na sprint: ele complementa Observer, Strategy e Factory na Central de Notificações (Opção 3), e complementará Strategy, Factory, Command e Decorator nos Relatórios Gerenciais (Opção 5, **somente planejado**).
+O Singleton **não é o único padrão** adotado na sprint: ele complementa Observer, Strategy e Factory na Central de Notificações (Opção 3), e complementa Strategy, Factory, Command e Decorator nos Relatórios Gerenciais (Opção 5).
 
 ---
 
