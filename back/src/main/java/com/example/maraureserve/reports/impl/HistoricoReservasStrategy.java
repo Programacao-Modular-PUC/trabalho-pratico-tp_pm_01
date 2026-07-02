@@ -1,8 +1,11 @@
 package com.example.maraureserve.reports.impl;
 
 import com.example.maraureserve.dtos.AluguelResponse;
+import com.example.maraureserve.models.Aluguel;
+import com.example.maraureserve.models.Pagamento;
 import com.example.maraureserve.reports.RelatorioStrategy;
 import com.example.maraureserve.repositories.AluguelRepository;
+import com.example.maraureserve.services.PagamentoService;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -14,9 +17,11 @@ import java.util.stream.Collectors;
 public class HistoricoReservasStrategy implements RelatorioStrategy {
 
     private final AluguelRepository aluguelRepository;
+    private final PagamentoService pagamentoService;
 
-    public HistoricoReservasStrategy(AluguelRepository aluguelRepository) {
+    public HistoricoReservasStrategy(AluguelRepository aluguelRepository, PagamentoService pagamentoService) {
         this.aluguelRepository = aluguelRepository;
+        this.pagamentoService = pagamentoService;
     }
 
     @Override
@@ -42,10 +47,13 @@ public class HistoricoReservasStrategy implements RelatorioStrategy {
                 ? Long.parseLong(parametros.get("quartoId").toString())
                 : null;
 
-        return aluguelRepository
-                .buscarHistoricoReservas(dataInicio, dataFim, clienteId, quartoId)
-                .stream()
-                .map(AluguelResponse::fromEntity)
+        List<Aluguel> alugueis = aluguelRepository
+                .buscarHistoricoReservas(dataInicio, dataFim, clienteId, quartoId);
+        Map<Long, Pagamento> pagamentos = pagamentoService.buscarPorAlugueis(
+                alugueis.stream().map(Aluguel::getId).toList());
+
+        return alugueis.stream()
+                .map(aluguel -> AluguelResponse.fromEntity(aluguel, pagamentos.get(aluguel.getId())))
                 .collect(Collectors.toList());
     }
 }

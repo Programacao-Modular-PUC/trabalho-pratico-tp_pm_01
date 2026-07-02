@@ -16,11 +16,13 @@ import com.example.maraureserve.common.exception.RecursoNaoPermitidoException;
 import com.example.maraureserve.dtos.AluguelRequest;
 import com.example.maraureserve.models.Aluguel;
 import com.example.maraureserve.models.Cliente;
+import com.example.maraureserve.models.Pagamento;
 import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
 import com.example.maraureserve.models.TipoQuarto;
 import com.example.maraureserve.repositories.AluguelRepository;
 import com.example.maraureserve.repositories.ClienteRepository;
+import com.example.maraureserve.repositories.PagamentoRepository;
 import com.example.maraureserve.repositories.QuartoRepository;
 import com.example.maraureserve.repositories.ResidenciaRepository;
 
@@ -63,7 +65,8 @@ class AluguelServiceTest {
                 criarRepositorio(),
                 new ResidenciaServiceStub(residencia),
                 new QuartoServiceStub(quarto),
-                new ClienteServiceStub(cliente));
+                new ClienteServiceStub(cliente),
+                new PagamentoService(criarPagamentoRepositorio()));
     }
 
     @Test
@@ -110,12 +113,31 @@ class AluguelServiceTest {
                 });
     }
 
+    private PagamentoRepository criarPagamentoRepositorio() {
+        return (PagamentoRepository) Proxy.newProxyInstance(
+                PagamentoRepository.class.getClassLoader(),
+                new Class[]{PagamentoRepository.class},
+                (proxy, method, args) -> {
+                    if ("save".equals(method.getName()) && args != null && args.length == 1) {
+                        Pagamento pagamento = (Pagamento) args[0];
+                        if (pagamento.getId() == null) {
+                            pagamento.setId(1L);
+                        }
+                        return pagamento;
+                    }
+                    return valorPadrao(method.getReturnType());
+                });
+    }
+
     private static Object valorPadrao(Class<?> returnType) {
         if (returnType.equals(Void.TYPE)) {
             return null;
         }
         if (returnType.equals(List.class)) {
             return List.of();
+        }
+        if (returnType.equals(java.util.Optional.class)) {
+            return java.util.Optional.empty();
         }
         if (returnType.equals(long.class) || returnType.equals(Long.class)) {
             return 0L;

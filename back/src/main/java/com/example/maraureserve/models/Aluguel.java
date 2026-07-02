@@ -45,8 +45,6 @@ public class Aluguel {
     @Enumerated(EnumType.STRING)
     private StatusAluguel status = StatusAluguel.RESERVADA;
 
-    private Boolean pagamentoConfirmado = false;
-
     public Long getId() {
         return id;
     }
@@ -141,13 +139,5 @@ public class Aluguel {
 
     public void setStatus(StatusAluguel status) {
         this.status = status;
-    }
-
-    public Boolean getPagamentoConfirmado() {
-        return pagamentoConfirmado;
-    }
-
-    public void setPagamentoConfirmado(Boolean pagamentoConfirmado) {
-        this.pagamentoConfirmado = pagamentoConfirmado;
     }
 }

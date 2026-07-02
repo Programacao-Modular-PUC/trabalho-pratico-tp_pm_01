@@ -103,6 +103,7 @@ export const api = {
     deleteAluguel: (id) => request(`/alugueis/${id}/cancelar`, { method: 'POST' }),
     checkInAluguel: (id) => request(`/alugueis/${id}/check-in`, { method: 'POST' }),
     checkOutAluguel: (id) => request(`/alugueis/${id}/check-out`, { method: 'POST' }),
+    processarPagamentoAluguel: (id) => request(`/alugueis/${id}/processar-pagamento`, { method: 'POST' }),
     confirmarPagamentoAluguel: (id) => request(`/alugueis/${id}/confirmar-pagamento`, { method: 'POST' }),
 
     listNotificacoes: async () => {

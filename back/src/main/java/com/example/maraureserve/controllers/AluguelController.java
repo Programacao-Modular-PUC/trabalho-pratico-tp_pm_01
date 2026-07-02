@@ -77,6 +77,11 @@ public class AluguelController {
         return aluguelService.realizarCheckOut(id);
     }
 
+    @PostMapping("/{id}/processar-pagamento")
+    public AluguelResponse processarPagamento(@PathVariable Long id) {
+        return aluguelService.processarPagamento(id);
+    }
+
     @PostMapping("/{id}/confirmar-pagamento")
     public AluguelResponse confirmarPagamento(@PathVariable Long id) {
         return aluguelService.confirmarPagamento(id);

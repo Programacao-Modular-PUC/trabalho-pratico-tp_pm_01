@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import com.example.maraureserve.dtos.AluguelRequest;
 import com.example.maraureserve.dtos.AluguelResponse;
 import com.example.maraureserve.models.Aluguel;
 import com.example.maraureserve.models.Cliente;
+import com.example.maraureserve.models.Pagamento;
 import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
 import com.example.maraureserve.models.StatusAluguel;
@@ -39,28 +41,35 @@ public class AluguelService {
     private final ResidenciaService residenciaService;
     private final QuartoService quartoService;
     private final ClienteService clienteService;
+    private final PagamentoService pagamentoService;
 
     public AluguelService(
             AluguelRepository aluguelRepository,
             ResidenciaService residenciaService,
             QuartoService quartoService,
-            ClienteService clienteService) {
+            ClienteService clienteService,
+            PagamentoService pagamentoService) {
         this.aluguelRepository = aluguelRepository;
         this.residenciaService = residenciaService;
         this.quartoService = quartoService;
         this.clienteService = clienteService;
+        this.pagamentoService = pagamentoService;
     }
 
     @Transactional(readOnly = true)
     public List<AluguelResponse> listar() {
-        return aluguelRepository.findAll().stream()
-                .map(AluguelResponse::fromEntity)
+        List<Aluguel> alugueis = aluguelRepository.findAll();
+        Map<Long, Pagamento> pagamentos = pagamentoService.buscarPorAlugueis(
+                alugueis.stream().map(Aluguel::getId).toList());
+        return alugueis.stream()
+                .map(aluguel -> AluguelResponse.fromEntity(aluguel, pagamentos.get(aluguel.getId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public AluguelResponse buscarPorId(Long id) {
-        return AluguelResponse.fromEntity(buscarEntidade(id));
+        Aluguel aluguel = buscarEntidade(id);
+        return AluguelResponse.fromEntity(aluguel, pagamentoService.buscarPorAluguel(id));
     }
 
     @Transactional
@@ -68,24 +77,28 @@ public class AluguelService {
         Aluguel aluguel = new Aluguel();
         preencherCampos(aluguel, request, null);
         aluguel.setStatus(StatusAluguel.RESERVADA);
-        aluguel.setPagamentoConfirmado(false);
         Aluguel salvo = aluguelRepository.save(aluguel);
+        Pagamento pagamento = pagamentoService.registrar(salvo);
         publicarEvento(TipoEventoNotificacao.RESERVA_CRIADA, salvo);
-        return AluguelResponse.fromEntity(salvo);
+        return AluguelResponse.fromEntity(salvo, pagamento);
     }
 
     @Transactional
     public AluguelResponse atualizar(Long id, AluguelRequest request) {
         Aluguel aluguel = buscarEntidade(id);
         preencherCampos(aluguel, request, id);
-        return AluguelResponse.fromEntity(aluguelRepository.save(aluguel));
+        Aluguel salvo = aluguelRepository.save(aluguel);
+        return AluguelResponse.fromEntity(salvo, pagamentoService.buscarPorAluguel(id));
     }
 
     @Transactional(readOnly = true)
     public List<AluguelResponse> listarPorCliente(Long clienteId) {
         clienteService.buscarEntidade(clienteId);
-        return aluguelRepository.findByClienteIdOrderByDataEntradaDesc(clienteId).stream()
-                .map(AluguelResponse::fromEntity)
+        List<Aluguel> alugueis = aluguelRepository.findByClienteIdOrderByDataEntradaDesc(clienteId);
+        Map<Long, Pagamento> pagamentos = pagamentoService.buscarPorAlugueis(
+                alugueis.stream().map(Aluguel::getId).toList());
+        return alugueis.stream()
+                .map(aluguel -> AluguelResponse.fromEntity(aluguel, pagamentos.get(aluguel.getId())))
                 .toList();
     }
 
@@ -106,7 +119,7 @@ public class AluguelService {
         aluguel.setStatus(StatusAluguel.EM_ANDAMENTO);
         Aluguel salvo = aluguelRepository.save(aluguel);
         publicarEvento(TipoEventoNotificacao.CHECKIN_REALIZADO, salvo);
-        return AluguelResponse.fromEntity(salvo);
+        return AluguelResponse.fromEntity(salvo, pagamentoService.buscarPorAluguel(id));
     }
 
     @Transactional
@@ -118,19 +131,22 @@ public class AluguelService {
         aluguel.setStatus(StatusAluguel.FINALIZADA);
         Aluguel salvo = aluguelRepository.save(aluguel);
         publicarEvento(TipoEventoNotificacao.CHECKOUT_REALIZADO, salvo);
-        return AluguelResponse.fromEntity(salvo);
+        return AluguelResponse.fromEntity(salvo, pagamentoService.buscarPorAluguel(id));
+    }
+
+    @Transactional
+    public AluguelResponse processarPagamento(Long id) {
+        Aluguel aluguel = buscarEntidade(id);
+        Pagamento pagamento = pagamentoService.processar(id);
+        return AluguelResponse.fromEntity(aluguel, pagamento);
     }
 
     @Transactional
     public AluguelResponse confirmarPagamento(Long id) {
         Aluguel aluguel = buscarEntidade(id);
-        if (Boolean.TRUE.equals(aluguel.getPagamentoConfirmado())) {
-            throw new BusinessException("Pagamento ja foi confirmado para esta reserva.");
-        }
-        aluguel.setPagamentoConfirmado(true);
-        Aluguel salvo = aluguelRepository.save(aluguel);
-        publicarEvento(TipoEventoNotificacao.PAGAMENTO_CONFIRMADO, salvo);
-        return AluguelResponse.fromEntity(salvo);
+        Pagamento pagamento = pagamentoService.confirmar(id);
+        publicarEvento(TipoEventoNotificacao.PAGAMENTO_CONFIRMADO, aluguel);
+        return AluguelResponse.fromEntity(aluguel, pagamento);
     }
 
     private void publicarEvento(TipoEventoNotificacao tipo, Aluguel aluguel) {

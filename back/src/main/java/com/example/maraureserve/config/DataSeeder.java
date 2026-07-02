@@ -13,12 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.maraureserve.models.Aluguel;
 import com.example.maraureserve.models.Cliente;
+import com.example.maraureserve.models.Pagamento;
 import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
+import com.example.maraureserve.models.StatusAluguel;
+import com.example.maraureserve.models.StatusPagamento;
 import com.example.maraureserve.models.TipoCamaCasal;
 import com.example.maraureserve.models.TipoQuarto;
 import com.example.maraureserve.repositories.AluguelRepository;
 import com.example.maraureserve.repositories.ClienteRepository;
+import com.example.maraureserve.repositories.PagamentoRepository;
 import com.example.maraureserve.repositories.QuartoRepository;
 import com.example.maraureserve.repositories.ResidenciaRepository;
 
@@ -32,12 +36,14 @@ public class DataSeeder {
             ClienteRepository clienteRepository,
             ResidenciaRepository residenciaRepository,
             QuartoRepository quartoRepository,
-            AluguelRepository aluguelRepository) {
+            AluguelRepository aluguelRepository,
+            PagamentoRepository pagamentoRepository) {
         return args -> popularDadosIniciais(
                 clienteRepository,
                 residenciaRepository,
                 quartoRepository,
-                aluguelRepository);
+                aluguelRepository,
+                pagamentoRepository);
     }
 
     @Transactional
@@ -45,7 +51,8 @@ public class DataSeeder {
             ClienteRepository clienteRepository,
             ResidenciaRepository residenciaRepository,
             QuartoRepository quartoRepository,
-            AluguelRepository aluguelRepository) {
+            AluguelRepository aluguelRepository,
+            PagamentoRepository pagamentoRepository) {
         Cliente visitante = garantirCliente(clienteRepository, cliente(
                 "Cliente Visitante",
                 "00000000001",
@@ -101,7 +108,7 @@ public class DataSeeder {
         atribuirResidenciasAoHost(residenciaRepository);
 
         if (aluguelRepository.count() == 0) {
-            aluguelRepository.saveAll(List.of(
+            List<Aluguel> alugueisSalvos = aluguelRepository.saveAll(List.of(
                     // Janeiro — finalizados
                     aluguelFinalizado(mariana,   quartosSeed.get(0), "2025-01-05", "2025-01-08", 1, false),
                     aluguelFinalizado(rafael,    quartosSeed.get(1), "2025-01-10", "2025-01-14", 2, true),
@@ -129,10 +136,11 @@ public class DataSeeder {
                     aluguelReservado(visitante,  quartosSeed.get(4), "2025-08-10", "2025-08-14", 2, true),
                     aluguelReservado(mariana,    quartosSeed.get(5), "2025-08-20", "2025-08-25", 3, false),
                     aluguelReservado(rafael,     quartosSeed.get(2), "2025-09-01", "2025-09-07", 6, false)));
+            seedPagamentos(pagamentoRepository, alugueisSalvos);
         }
 
         if (aluguelRepository.countBySaidaAno(2026) == 0) {
-            aluguelRepository.saveAll(List.of(
+            List<Aluguel> alugueisSalvos2026 = aluguelRepository.saveAll(List.of(
                     // ── Janeiro 2026 — alta temporada (verão) ──────────────────────
                     aluguelFinalizado(rafael,    quartosSeed.get(1), "2026-01-02", "2026-01-07", 2, false),
                     aluguelFinalizado(mariana,   quartosSeed.get(4), "2026-01-04", "2026-01-10", 2, true),
@@ -173,7 +181,28 @@ public class DataSeeder {
                     aluguelReservado(mariana,    quartosSeed.get(2), "2026-07-10", "2026-07-17", 4, false),
                     aluguelReservado(visitante,  quartosSeed.get(6), "2026-07-18", "2026-07-24", 1, false),
                     aluguelReservado(rafael,     quartosSeed.get(4), "2026-07-24", "2026-07-31", 2, true)));
+            seedPagamentos(pagamentoRepository, alugueisSalvos2026);
         }
+    }
+
+    private void seedPagamentos(PagamentoRepository pagamentoRepository, List<Aluguel> alugueis) {
+        pagamentoRepository.saveAll(alugueis.stream().map(this::criarPagamentoParaAluguel).toList());
+    }
+
+    private Pagamento criarPagamentoParaAluguel(Aluguel aluguel) {
+        Pagamento pagamento = new Pagamento();
+        pagamento.setAluguel(aluguel);
+        pagamento.setValorTotal(aluguel.getValorFinal());
+        pagamento.setDataRegistro(aluguel.getDataEntrada().minusDays(1));
+
+        if (aluguel.getStatus() == StatusAluguel.RESERVADA) {
+            pagamento.setStatus(StatusPagamento.PENDENTE);
+        } else {
+            pagamento.setStatus(StatusPagamento.CONFIRMADO);
+            pagamento.setDataProcessamento(aluguel.getDataEntrada().minusHours(12));
+            pagamento.setDataConfirmacao(aluguel.getDataEntrada().minusHours(6));
+        }
+        return pagamento;
     }
 
     private Cliente garantirCliente(ClienteRepository repository, Cliente seed) {
@@ -323,7 +352,6 @@ public class DataSeeder {
     private Aluguel aluguelFinalizado(Cliente cliente, Quarto quarto, String entrada, String saida, int hospedes, boolean berco) {
         Aluguel a = aluguelBase(cliente, quarto, LocalDate.parse(entrada), LocalDate.parse(saida), hospedes, berco);
         a.setStatus(com.example.maraureserve.models.StatusAluguel.FINALIZADA);
-        a.setPagamentoConfirmado(true);
         return a;
     }
 

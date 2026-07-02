@@ -15,16 +15,19 @@ import org.junit.jupiter.api.Test;
 import com.example.maraureserve.dtos.AluguelRequest;
 import com.example.maraureserve.models.Aluguel;
 import com.example.maraureserve.models.Cliente;
+import com.example.maraureserve.models.Pagamento;
 import com.example.maraureserve.models.Quarto;
 import com.example.maraureserve.models.Residencia;
 import com.example.maraureserve.models.TipoQuarto;
 import com.example.maraureserve.notifications.evento.TipoEventoNotificacao;
 import com.example.maraureserve.repositories.AluguelRepository;
 import com.example.maraureserve.repositories.ClienteRepository;
+import com.example.maraureserve.repositories.PagamentoRepository;
 import com.example.maraureserve.repositories.QuartoRepository;
 import com.example.maraureserve.repositories.ResidenciaRepository;
 import com.example.maraureserve.services.AluguelService;
 import com.example.maraureserve.services.ClienteService;
+import com.example.maraureserve.services.PagamentoService;
 import com.example.maraureserve.services.QuartoService;
 import com.example.maraureserve.services.ResidenciaService;
 
@@ -70,7 +73,8 @@ class AluguelServiceNotificacaoIntegrationTest {
                 criarRepositorio(),
                 new ResidenciaServiceStub(residencia),
                 new QuartoServiceStub(quarto),
-                new ClienteServiceStub(cliente));
+                new ClienteServiceStub(cliente),
+                new PagamentoService(criarPagamentoRepositorio()));
 
         aluguelService.criar(request);
 
@@ -91,6 +95,28 @@ class AluguelServiceNotificacaoIntegrationTest {
                             aluguel.setId(99L);
                         }
                         return aluguel;
+                    }
+                    return null;
+                });
+    }
+
+    private PagamentoRepository criarPagamentoRepositorio() {
+        return (PagamentoRepository) Proxy.newProxyInstance(
+                PagamentoRepository.class.getClassLoader(),
+                new Class[]{PagamentoRepository.class},
+                (proxy, method, args) -> {
+                    if ("save".equals(method.getName()) && args != null && args.length == 1) {
+                        Pagamento pagamento = (Pagamento) args[0];
+                        if (pagamento.getId() == null) {
+                            pagamento.setId(1L);
+                        }
+                        return pagamento;
+                    }
+                    if (method.getReturnType().equals(java.util.Optional.class)) {
+                        return java.util.Optional.empty();
+                    }
+                    if (method.getReturnType().equals(List.class)) {
+                        return List.of();
                     }
                     return null;
                 });

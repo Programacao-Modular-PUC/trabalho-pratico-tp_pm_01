@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react'
-import { AlertCircle, Baby, Calendar, DollarSign, FileText, MapPin, RefreshCw, Users, X } from 'lucide-react'
+import { AlertCircle, Baby, Calendar, CreditCard, DollarSign, FileText, MapPin, RefreshCw, Users, X } from 'lucide-react'
 import CancelReservationButton from '../../../components/CancelReservationButton'
 import { api } from '../../../services/api'
 import { ensureHostSession, filterHostResidences, getHostEmail } from '../../../services/auth'
+
+const PAGAMENTO_STATUS_LABELS = {
+    PENDENTE: 'Pagamento pendente',
+    EM_PROCESSAMENTO: 'Processando pagamento',
+    CONFIRMADO: 'Pagamento confirmado',
+    RECUSADO: 'Pagamento recusado',
+}
+
+const PAGAMENTO_STATUS_COLORS = {
+    PENDENTE: 'bg-amber-100 text-amber-800',
+    EM_PROCESSAMENTO: 'bg-blue-100 text-blue-800',
+    CONFIRMADO: 'bg-emerald-100 text-emerald-800',
+    RECUSADO: 'bg-red-100 text-red-800',
+}
 
 function Bookings() {
     const hostEmail = getHostEmail()
@@ -47,6 +61,28 @@ function Bookings() {
         setBookings((current) => current.filter((item) => item.id !== booking.id))
         setSuccessMessage(`Reserva de ${booking.nomeCliente} (quarto ${booking.codigoQuarto}) cancelada.`)
         setError('')
+    }
+
+    const handleProcessarPagamento = async (booking) => {
+        setError('')
+        try {
+            const atualizado = await api.processarPagamentoAluguel(booking.id)
+            setBookings((current) => current.map((item) => (item.id === booking.id ? atualizado : item)))
+            setSuccessMessage(`Pagamento da reserva de ${booking.nomeCliente} está em processamento.`)
+        } catch (err) {
+            setError(err.message)
+        }
+    }
+
+    const handleConfirmarPagamento = async (booking) => {
+        setError('')
+        try {
+            const atualizado = await api.confirmarPagamentoAluguel(booking.id)
+            setBookings((current) => current.map((item) => (item.id === booking.id ? atualizado : item)))
+            setSuccessMessage(`Pagamento da reserva de ${booking.nomeCliente} confirmado.`)
+        } catch (err) {
+            setError(err.message)
+        }
     }
 
     return (
@@ -106,13 +142,32 @@ function Bookings() {
                                         <div className="flex items-center gap-2 text-xs text-slate-500">
                                             <Baby size={14} /> {booking.bercoSolicitado ? 'Berco solicitado' : 'Sem berco'}
                                         </div>
+                                        <span className={`inline-flex mt-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${PAGAMENTO_STATUS_COLORS[booking.pagamento?.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                                            {PAGAMENTO_STATUS_LABELS[booking.pagamento?.status] ?? 'Pagamento pendente'}
+                                        </span>
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                         <Info label="Quarto" value={booking.codigoQuarto} />
                                         <Info label="Periodo" value={`${new Date(booking.dataEntrada).toLocaleDateString('pt-BR')} - ${new Date(booking.dataSaida).toLocaleDateString('pt-BR')}`} />
                                         <Info label="Diaria" value={formatCurrency(booking.valorDiaria)} highlight />
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {booking.pagamento?.status === 'PENDENTE' && (
+                                                <button
+                                                    onClick={() => handleProcessarPagamento(booking)}
+                                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition"
+                                                >
+                                                    <CreditCard size={14} /> Processar pagamento
+                                                </button>
+                                            )}
+                                            {booking.pagamento?.status === 'EM_PROCESSAMENTO' && (
+                                                <button
+                                                    onClick={() => handleConfirmarPagamento(booking)}
+                                                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition"
+                                                >
+                                                    <CreditCard size={14} /> Confirmar pagamento
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => setSelectedReceipt(booking)}
                                                 className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition"
