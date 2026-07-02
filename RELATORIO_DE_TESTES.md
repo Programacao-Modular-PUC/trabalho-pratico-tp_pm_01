@@ -221,3 +221,104 @@ Get-Content .\target\surefire-reports\*.txt
 - Guilherme Augusto Martins de Carvalho
 - Luca Moreira Ribeiro Mazala de Araujo
 - João Victor Leite Soares
+
+---
+
+# Relatório de Testes — Sprint 4
+
+**Disciplina:** Programação Modular  
+**Projeto:** Sistema de Hospedagem — Marau Reserve  
+**Sprint:** 4 — Padrões de Projeto e Evolução Arquitetural  
+**Data da execução:** 02/07/2026  
+**Ferramenta:** JUnit 5 (JUnit Jupiter) + Maven Surefire 3.5.5  
+**Comando utilizado:**
+
+```powershell
+cd back
+.\mvnw.cmd test
+```
+
+---
+
+## S4.1 Resumo da execução
+
+| Métrica | Valor |
+|---|---|
+| Total de testes | 26 |
+| Sucesso | 26 |
+| Falhas | 0 |
+| Erros | 0 |
+| Ignorados | 0 |
+| Resultado final | **BUILD SUCCESS** |
+
+### Classes de teste executadas
+
+| Classe | Testes | Escopo |
+|---|---|---|
+| `BackApplicationTests` | 1 | Contexto Spring Boot |
+| `AluguelServiceTest` | 3 | Regras de negócio do serviço de aluguel |
+| `AluguelServiceNotificacaoIntegrationTest` | 1 | Integração AluguelService ↔ notificações |
+| `QuartoTest` | 4 | Cálculo de diária |
+| `GerenciadorNotificacoesTest` | 4 | Singleton, Observer, Strategy |
+| `RelatorioFactoryTest` | 3 | Factory de estratégias |
+| `GerarRelatorioCommandTest` | 3 | Command |
+| `GerenciadorRelatoriosTest` | 4 | Singleton + Decorator |
+| `FaturamentoMensalStrategyTest` | 3 | Strategy de faturamento mensal |
+
+---
+
+## S4.2 Novos testes da Sprint 4
+
+### Central de Notificações
+
+**Arquivo:** `back/src/test/java/com/example/maraureserve/notifications/GerenciadorNotificacoesTest.java`
+
+| Método | Objetivo |
+|---|---|
+| `getInstance_deveRetornarMesmaInstancia` | Valida padrão Singleton |
+| `publicar_deveNotificarObservadoresRegistrados` | Valida padrão Observer |
+| `enviarPorCanais_deveUsarTodosCanaisRegistrados` | Valida padrão Strategy |
+| `fluxoCompleto_deveRegistrarNotificacaoInterna` | Fluxo completo com histórico interno |
+
+**Integração com domínio:** `AluguelServiceNotificacaoIntegrationTest.criarReserva_devePublicarEventoReservaCriada` verifica que `AluguelService.criar()` publica `RESERVA_CRIADA` no `GerenciadorNotificacoes`.
+
+### Relatórios Gerenciais
+
+| Arquivo | Padrão validado | Testes |
+|---|---|---|
+| `RelatorioFactoryTest` | Factory | 3 |
+| `GerarRelatorioCommandTest` | Command | 3 |
+| `GerenciadorRelatoriosTest` | Singleton + Decorator | 4 |
+| `FaturamentoMensalStrategyTest` | Strategy | 3 |
+
+---
+
+## S4.3 Ajuste técnico — compatibilidade JDK 25
+
+Os testes de `AluguelServiceTest` foram refatorados para usar **stubs com Java Proxy e subclasses**, eliminando dependência de Mockito inline (incompatível com JDK 25 no ambiente de execução). Os demais testes da Sprint 4 já seguiam essa abordagem.
+
+---
+
+## S4.4 Cobertura dos requisitos da Sprint 4
+
+| Requisito | Cobertura nos testes |
+|---|---|
+| Padrão Singleton (obrigatório) | `GerenciadorNotificacoesTest`, `GerenciadorRelatoriosTest` |
+| Central de Notificações (Opção 3) | 4 testes unitários + 1 teste de integração |
+| Relatórios Gerenciais (Opção 5) | 13 testes nos módulos `reports/` |
+| Integração evento ↔ serviço | `criar_devePublicarEventoReservaCriada` |
+
+---
+
+## S4.5 Como reproduzir
+
+```powershell
+cd back
+.\mvnw.cmd test
+```
+
+Para executar apenas os testes da Sprint 4:
+
+```powershell
+.\mvnw.cmd test -Dtest=GerenciadorNotificacoesTest,RelatorioFactoryTest,GerarRelatorioCommandTest,GerenciadorRelatoriosTest,FaturamentoMensalStrategyTest
+```
