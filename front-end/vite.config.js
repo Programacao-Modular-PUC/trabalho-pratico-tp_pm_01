@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [react()],
   cacheDir: 'node_modules/.vite',
   server: {
+    port: 5174,
+    strictPort: true,
     watch: {
       usePolling: true,
       interval: 300,
