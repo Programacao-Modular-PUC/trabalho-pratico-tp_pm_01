@@ -1,6 +1,8 @@
 package com.example.maraureserve.services;
 
 import com.example.maraureserve.reports.GerenciadorRelatorios;
+import com.example.maraureserve.reports.command.GerarRelatorioCommand;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -16,7 +18,8 @@ public class RelatorioService {
     }
 
     public Object gerar(String tipo, Map<String, Object> parametros) {
-        return gerenciador.gerarRelatorio(tipo.toUpperCase(), parametros);
+        GerarRelatorioCommand command = new GerarRelatorioCommand(tipo, parametros);
+        return gerenciador.executar(command);
     }
 
     public Set<String> tiposDisponiveis() {
